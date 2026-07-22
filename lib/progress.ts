@@ -16,6 +16,11 @@ export interface Progress {
 
 export const STORAGE_KEY = 'quiz-progress-v1'
 
+// 进度按科目分别保存：综合练习用基础 key，单科用 `key:subject`
+export function storageKeyFor(subject: string): string {
+  return subject === 'general' ? STORAGE_KEY : `${STORAGE_KEY}:${subject}`
+}
+
 export function createEmptyProgress(): Progress {
   return { currentIndex: 0, answers: {}, wrongIds: [], updatedAt: 0 }
 }

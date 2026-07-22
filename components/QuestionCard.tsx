@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Question } from '@/lib/questions'
 import { grade, type UserValue } from '@/lib/grading'
 
@@ -9,9 +9,12 @@ interface Props {
   total: number
   initialValue?: UserValue
   initialSubmitted?: boolean
+  flagged?: boolean
+  onToggleFlag?: () => void
   onSubmit: (value: UserValue) => void
   onNext: () => void
   onPrev?: () => void
+  onSelfGrade?: (correct: boolean) => void
 }
 
 export default function QuestionCard({
@@ -20,14 +23,19 @@ export default function QuestionCard({
   total,
   initialValue,
   initialSubmitted,
+  flagged,
+  onToggleFlag,
   onSubmit,
   onNext,
   onPrev,
+  onSelfGrade,
 }: Props) {
   const [value, setValue] = useState<UserValue>(
     initialValue ?? (question.type === 'multiple' ? [] : ''),
   )
   const [submitted, setSubmitted] = useState(initialSubmitted ?? false)
+  const [collapsed, setCollapsed] = useState(false)
+  const [selfGraded, setSelfGraded] = useState<boolean | null>(null)
 
   const isMultiple = question.type === 'multiple'
   const isFill = question.type === 'fill'
@@ -56,6 +64,34 @@ export default function QuestionCard({
     setValue(opt)
   }
 
+  // 键盘答题：1-4 / A-D 选选项，Enter 提交或下一题；输入框内按键忽略
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return
+      if (!submitted) {
+        let idx = -1
+        if (/^[1-4]$/.test(e.key)) idx = Number(e.key) - 1
+        else if (/^[a-dA-D]$/.test(e.key)) idx = e.key.toLowerCase().charCodeAt(0) - 97
+        if (idx >= 0 && question.options && idx < question.options.length) {
+          const opt = question.options[idx]
+          if (question.type === 'multiple') toggleMultiple(opt)
+          else selectSingle(opt)
+          return
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          if (canSubmit) handleSubmit()
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault()
+        onNext()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [submitted, question, canSubmit, onNext])
+
   const correctAnswer = Array.isArray(question.answer)
     ? question.answer.join('、')
     : question.answer
@@ -69,21 +105,37 @@ export default function QuestionCard({
         <span>
           第 {index + 1} / {total} 题
         </span>
-        <button
-          type="button"
-          onClick={() => onPrev?.()}
-          disabled={index === 0}
-          className="ml-auto rounded-lg border border-zinc-300 px-2 py-1 text-zinc-600 transition-colors hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300"
-        >
-          ← 上一题
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {onToggleFlag && (
+            <button
+              type="button"
+              onClick={onToggleFlag}
+              className={[
+                'rounded-lg border px-2 py-1 transition-colors',
+                flagged
+                  ? 'border-amber-400 bg-amber-50 text-amber-600 dark:bg-amber-950'
+                  : 'border-zinc-300 text-zinc-400 hover:border-zinc-400 dark:border-zinc-700',
+              ].join(' ')}
+            >
+              {flagged ? '★ 已标记' : '☆ 标记'}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onPrev?.()}
+            disabled={index === 0}
+            className="rounded-lg border border-zinc-300 px-2 py-1 transition-colors hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-30 dark:border-zinc-700"
+          >
+            ← 上一题
+          </button>
+        </div>
       </div>
 
       <h2 className="mb-4 text-lg font-medium leading-7">{question.stem}</h2>
 
       {!isFill && question.options && (
         <div className="flex flex-col gap-2">
-          {question.options.map((opt) => {
+          {question.options.map((opt, oi) => {
             const selected = isMultiple
               ? Array.isArray(value) && value.includes(opt)
               : value === opt
@@ -108,6 +160,7 @@ export default function QuestionCard({
                       : 'border-zinc-200 hover:border-zinc-400 dark:border-zinc-800',
                 ].join(' ')}
               >
+                <span className="mr-2 text-zinc-400">{oi + 1}.</span>
                 {opt}
               </button>
             )
@@ -140,26 +193,73 @@ export default function QuestionCard({
       {submitted && (
         <div className="mt-5">
           {question.type !== 'fill' ? (
-            <p className={isWrongAnswer(question, value) ? 'mb-2 font-medium text-red-600' : 'mb-2 font-medium text-green-600'}>
+            <p
+              className={
+                isWrongAnswer(question, value)
+                  ? 'mb-2 font-medium text-red-600'
+                  : 'mb-2 font-medium text-green-600'
+              }
+            >
               {isWrongAnswer(question, value) ? '回答错误' : '回答正确'}
             </p>
+          ) : selfGraded === null ? (
+            <div className="mb-2">
+              <p className="mb-2 font-medium text-zinc-500">
+                提交成功（填空/简答请你自行对照参考答案）
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelfGraded(true)
+                    onSelfGrade?.(true)
+                  }}
+                  className="rounded-xl border border-green-500 px-4 py-2 font-medium text-green-600"
+                >
+                  我答对了
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelfGraded(false)
+                    onSelfGrade?.(false)
+                  }}
+                  className="rounded-xl border border-red-500 px-4 py-2 font-medium text-red-600"
+                >
+                  我答错了
+                </button>
+              </div>
+            </div>
           ) : (
-            <p className="mb-2 font-medium text-zinc-500">
-              提交成功（填空/简答请你自行对照参考答案）
+            <p className="mb-2 font-medium text-zinc-600">
+              已自评：{selfGraded ? '答对' : '答错'}
             </p>
           )}
+
           <div className="rounded-xl bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-            <p className="mb-1">
-              <span className="font-medium">参考答案：</span>
-              {correctAnswer}
-            </p>
-            {question.explanation && (
-              <p>
-                <span className="font-medium">解析：</span>
-                {question.explanation}
-              </p>
+            {!collapsed && (
+              <>
+                <p className="mb-1">
+                  <span className="font-medium">参考答案：</span>
+                  {correctAnswer}
+                </p>
+                {question.explanation && (
+                  <p>
+                    <span className="font-medium">解析：</span>
+                    {question.explanation}
+                  </p>
+                )}
+              </>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            className="mt-2 text-sm text-zinc-500 hover:text-zinc-700"
+          >
+            {collapsed ? '展开解析' : '收起解析'}
+          </button>
+
           <button
             type="button"
             onClick={onNext}

@@ -1,8 +1,11 @@
+import { dsQuestions } from './ds_bank'
+
 export type QuestionType = 'single' | 'multiple' | 'judge' | 'fill'
 
 export interface Question {
   id: string
   type: QuestionType
+  subject: string
   stem: string
   options?: string[]
   answer: string | string[]
@@ -13,6 +16,7 @@ export const questions: Question[] = [
   {
     id: 'q1',
     type: 'single',
+    subject: 'linear-algebra',
     stem: '线性代数中，矩阵乘法一般不满足下列哪一条性质？',
     options: ['结合律', '分配律', '对加法的分配律', '交换律'],
     answer: '交换律',
@@ -21,6 +25,7 @@ export const questions: Question[] = [
   {
     id: 'q2',
     type: 'single',
+    subject: 'general',
     stem: '二进制数 1010 对应的十进制数是？',
     options: ['8', '10', '12', '16'],
     answer: '10',
@@ -29,6 +34,7 @@ export const questions: Question[] = [
   {
     id: 'q3',
     type: 'single',
+    subject: 'english-1',
     stem: 'Choose the correct past tense: He ___ to school yesterday.',
     options: ['go', 'goes', 'went', 'gone'],
     answer: 'went',
@@ -37,6 +43,7 @@ export const questions: Question[] = [
   {
     id: 'q4',
     type: 'multiple',
+    subject: 'math-1',
     stem: '下列哪些函数是偶函数？（多选）',
     options: ['x²', 'cos x', '|x|', 'x³'],
     answer: ['x²', 'cos x', '|x|'],
@@ -45,6 +52,7 @@ export const questions: Question[] = [
   {
     id: 'q5',
     type: 'multiple',
+    subject: 'general',
     stem: '下列哪些语言支持面向对象编程？（多选）',
     options: ['Java', 'C++', 'Python', 'C'],
     answer: ['Java', 'C++', 'Python'],
@@ -53,6 +61,7 @@ export const questions: Question[] = [
   {
     id: 'q6',
     type: 'multiple',
+    subject: 'general',
     stem: '关于进程与线程，下列说法正确的有哪些？（多选）',
     options: [
       '进程是资源分配的基本单位',
@@ -66,6 +75,7 @@ export const questions: Question[] = [
   {
     id: 'q7',
     type: 'judge',
+    subject: 'math-1',
     stem: '若函数在某点可导，则它在该点必定连续。',
     options: ['正确', '错误'],
     answer: '正确',
@@ -74,6 +84,7 @@ export const questions: Question[] = [
   {
     id: 'q8',
     type: 'judge',
+    subject: 'general',
     stem: 'HTTP 是一种无状态（stateless）协议。',
     options: ['正确', '错误'],
     answer: '正确',
@@ -82,6 +93,7 @@ export const questions: Question[] = [
   {
     id: 'q9',
     type: 'judge',
+    subject: 'english-2',
     stem: '英文单词 "information" 是不可数名词。',
     options: ['正确', '错误'],
     answer: '正确',
@@ -90,6 +102,7 @@ export const questions: Question[] = [
   {
     id: 'q10',
     type: 'fill',
+    subject: 'math-1',
     stem: '不定积分 ∫2x dx = ？（请写出含任意常数 C 的结果）',
     answer: ['x^2 + C', 'x² + C'],
     explanation: '∫2x dx = x² + C。',
@@ -97,6 +110,7 @@ export const questions: Question[] = [
   {
     id: 'q11',
     type: 'fill',
+    subject: 'general',
     stem: 'TCP 建立连接需要三次握手，释放连接需要 ___ 次握手。',
     answer: ['4', '四'],
     explanation: 'TCP 释放连接需要四次握手（FIN/ACK 各两次）。',
@@ -104,6 +118,7 @@ export const questions: Question[] = [
   {
     id: 'q12',
     type: 'fill',
+    subject: 'marxism',
     stem: '马克思主义哲学的直接理论来源中，主要是黑格尔的辩证法和 ___ 的唯物主义。',
     answer: ['费尔巴哈'],
     explanation: '马克思批判吸收了费尔巴哈的唯物主义与黑格尔的辩证法。',
@@ -111,6 +126,7 @@ export const questions: Question[] = [
   {
     id: 'q13',
     type: 'single',
+    subject: 'probability',
     stem: '抛一枚均匀硬币两次，至少出现一次正面的概率是？',
     options: ['1/4', '1/2', '3/4', '1'],
     answer: '3/4',
@@ -119,6 +135,7 @@ export const questions: Question[] = [
   {
     id: 'q14',
     type: 'judge',
+    subject: 'linear-algebra',
     stem: '行列式为 0 的方阵一定不可逆。',
     options: ['正确', '错误'],
     answer: '正确',
@@ -127,9 +144,11 @@ export const questions: Question[] = [
   {
     id: 'q15',
     type: 'multiple',
+    subject: 'english-3',
     stem: '下列哪些是英语连词（conjunction）？（多选）',
     options: ['because', 'although', 'quickly', 'if'],
     answer: ['because', 'although', 'if'],
     explanation: 'quickly 是副词；because/although/if 是连词。',
   },
+  ...dsQuestions,
 ]
