@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { subjects, GENERAL_SUBJECT, GENERAL_NAME } from '@/lib/subjects'
+import { downloadBackup } from '@/lib/backup'
+import { subjects, GENERAL_SUBJECT, GENERAL_NAME, subjectName } from '@/lib/subjects'
 import { loadBank } from '@/lib/bank'
 import { loadFlags } from '@/lib/flags'
 import {
@@ -65,6 +66,21 @@ export default function Home() {
     saveSelectedSubjects(ids)
     setSelected(ids)
     setEditing(false)
+  }
+
+  function resetSubject(id: string) {
+    if (
+      !window.confirm(
+        `确定重置「${subjectName(id)}」的进度与错题吗？此操作不可撤销。`,
+      )
+    )
+      return
+    try {
+      localStorage.removeItem(storageKeyFor(id))
+    } catch {
+      /* 忽略 */
+    }
+    setBank(loadBank())
   }
 
   if (!hydrated) {
@@ -153,9 +169,9 @@ export default function Home() {
                   : `共 ${total} 题${answered > 0 ? ` · 已做 ${answered}/${total}` : ''}`}
               </div>
               {!empty && (
-                <div className="mt-2 flex gap-3 text-xs">
+                <div className="mt-2 flex items-center gap-3 text-xs">
                   <Link
-                    href={`/practice?subject=${s.id}&mode=wrong`}
+                    href={`/wrong?subject=${s.id}`}
                     className="text-red-500 hover:underline"
                   >
                     错题 {wrongCount}
@@ -166,6 +182,13 @@ export default function Home() {
                   >
                     难题 {flagCount}
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => resetSubject(s.id)}
+                    className="ml-auto text-zinc-400 hover:text-red-500 hover:underline"
+                  >
+                    重置
+                  </button>
                 </div>
               )}
             </div>
@@ -182,10 +205,23 @@ export default function Home() {
         </Link>
       </div>
 
-      <div className="mt-3 text-center">
+      <div className="mt-3 flex justify-center gap-4">
         <Link href="/import" className="text-sm text-blue-600 hover:underline">
           导入 / 管理题库
         </Link>
+        <Link href="/history" className="text-sm text-blue-600 hover:underline">
+          练习历史
+        </Link>
+        <Link href="/wrong" className="text-sm text-blue-600 hover:underline">
+          错题本
+        </Link>
+        <button
+          type="button"
+          onClick={downloadBackup}
+          className="text-sm text-blue-600 underline-offset-2 hover:underline"
+        >
+          导出备份
+        </button>
       </div>
 
       <button

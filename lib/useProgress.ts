@@ -121,6 +121,36 @@ export function useProgress(items: Question[], subject: string) {
     setProgress(empty)
   }, [subject])
 
+  // 回到第 1 题但保留已答记录，用于切换顺序/随机
+  const restart = useCallback(() => {
+    setProgress((p) => {
+      const updated: Progress = { ...p, currentIndex: 0, updatedAt: Date.now() }
+      try {
+        localStorage.setItem(storageKeyFor(subject), JSON.stringify(updated))
+      } catch {
+        /* 忽略 */
+      }
+      return updated
+    })
+  }, [subject])
+
+  // 从错题本移除：仅移出 wrongIds，保留已做答题记录
+  const removeWrong = useCallback(
+    (id: string) => {
+      setProgress((p) => {
+        const wrongIds = p.wrongIds.filter((x) => x !== id)
+        const next: Progress = { ...p, wrongIds, updatedAt: Date.now() }
+        try {
+          localStorage.setItem(storageKeyFor(subject), JSON.stringify(next))
+        } catch {
+          /* 忽略写入失败 */
+        }
+        return next
+      })
+    },
+    [subject],
+  )
+
   return {
     progress,
     hydrated,
@@ -131,5 +161,7 @@ export function useProgress(items: Question[], subject: string) {
     next,
     prev,
     reset,
+    restart,
+    removeWrong,
   }
 }

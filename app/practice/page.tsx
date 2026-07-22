@@ -1,16 +1,18 @@
 'use client'
-import { Suspense, useEffect, useState, type ReactNode } from 'react'
+import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useProgress } from '@/lib/useProgress'
 import { loadBank } from '@/lib/bank'
 import { GENERAL_SUBJECT, subjectName } from '@/lib/subjects'
 import { loadFlags, saveFlags } from '@/lib/flags'
+import { recordHistory } from '@/lib/history'
 import type { Question } from '@/lib/questions'
 import QuestionCard from '@/components/QuestionCard'
+import ReviewCard from '@/components/ReviewCard'
 import Summary from '@/components/Summary'
 
-type Mode = 'all' | 'wrong' | 'flags'
+type Mode = 'all' | 'wrong' | 'flags' | 'memory'
 
 // 按科目确定性打乱，保证刷新后同科目顺序一致（续练不错位）
 function seededShuffle<T>(arr: T[], seed: string): T[] {
@@ -38,7 +40,10 @@ function PracticeInner() {
   const params = useSearchParams()
   const subject = params.get('subject') ?? GENERAL_SUBJECT
   const modeParam = params.get('mode')
-  const mode: Mode = modeParam === 'wrong' || modeParam === 'flags' ? modeParam : 'all'
+  const mode: Mode =
+    modeParam === 'wrong' || modeParam === 'flags' || modeParam === 'memory'
+      ? modeParam
+      : 'all'
 
   const [bank, setBank] = useState<Question[]>(() => loadBank())
   const [flags, setFlags] = useState<Set<string>>(() => loadFlags())
@@ -74,19 +79,32 @@ function PracticeInner() {
       }
       return n
     })
+    if (mode === 'all') restart()
   }
 
   const ordered = shuffle ? seededShuffle(allItems, subject) : allItems
 
-  const { progress, hydrated, total, isComplete, submitAnswer, selfGrade, next, prev, reset } =
-    useProgress(allItems, subject)
+  const {
+    progress,
+    hydrated,
+    total,
+    isComplete,
+    submitAnswer,
+    selfGrade,
+    next,
+    prev,
+    reset,
+    restart,
+  } = useProgress(allItems, subject)
 
   const items =
     mode === 'all'
       ? ordered
       : mode === 'wrong'
         ? ordered.filter((q) => progress.wrongIds.includes(q.id))
-        : ordered.filter((q) => flags.has(q.id))
+        : mode === 'memory'
+          ? ordered
+          : ordered.filter((q) => flags.has(q.id))
 
   const displayIndex = mode === 'all' ? progress.currentIndex : localIndex
   const question = items[displayIndex]
@@ -99,6 +117,27 @@ function PracticeInner() {
   const correctCount = graded.filter((a) => a.correct === true).length
   const accuracy = graded.length ? Math.round((correctCount / graded.length) * 100) : 0
   const remaining = items.length - answered
+
+  // 本批全部作答完成后记录一次历史（用于薄弱分析）
+  const recordedRef = useRef(false)
+  useEffect(() => {
+    if (recordedRef.current) return
+    if (items.length > 0 && answered >= items.length) {
+      recordedRef.current = true
+      const correct = items.filter(
+        (q) => progress.answers[q.id]?.correct === true,
+      ).length
+      recordHistory({ subject, mode, total: items.length, answered, correct })
+    }
+  }, [items.length, answered, progress, subject, mode])
+
+  // 从错题本"重练"跳转：定位到指定题目（非全部模式用 localIndex）
+  const focusId = params.get('q')
+  useEffect(() => {
+    if (!focusId || !hydrated) return
+    const idx = items.findIndex((q) => q.id === focusId)
+    if (idx >= 0 && mode !== 'all') setLocalIndex(idx)
+  }, [focusId, hydrated, items, mode])
 
   function toggleFlag(id: string) {
     setFlags((prev) => {
@@ -188,6 +227,9 @@ function PracticeInner() {
           <Tab href={`/practice?subject=${subject}&mode=flags`} active={mode === 'flags'}>
             难题
           </Tab>
+          <Tab href={`/practice?subject=${subject}&mode=memory`} active={mode === 'memory'}>
+            背题
+          </Tab>
         </div>
         <button
           type="button"
@@ -198,44 +240,60 @@ function PracticeInner() {
         </button>
       </div>
 
-      <div className="mb-4">
-        <div className="mb-1 flex justify-between text-xs text-zinc-500">
-          <span>
-            已答 {answered}/{items.length}
-          </span>
-          <span>
-            正确率 {accuracy}%（{correctCount}/{graded.length}）
-          </span>
+      {mode !== 'memory' && (
+        <div className="mb-4">
+          <div className="mb-1 flex justify-between text-xs text-zinc-500">
+            <span>
+              已答 {answered}/{items.length}
+            </span>
+            <span>
+              正确率 {accuracy}%（{correctCount}/{graded.length}）
+            </span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
+            <div
+              className="h-2 rounded-full bg-blue-600 transition-all"
+              style={{ width: `${items.length ? (answered / items.length) * 100 : 0}%` }}
+            />
+          </div>
+          <div className="mt-1 text-xs text-zinc-500">剩余 {remaining} 题</div>
         </div>
-        <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
-          <div
-            className="h-2 rounded-full bg-blue-600 transition-all"
-            style={{ width: `${items.length ? (answered / items.length) * 100 : 0}%` }}
-          />
-        </div>
-        <div className="mt-1 text-xs text-zinc-500">剩余 {remaining} 题</div>
-      </div>
+      )}
 
-      <QuestionCard
-        key={question.id}
-        question={question}
-        index={displayIndex}
-        total={items.length}
-        initialValue={saved}
-        initialSubmitted={answeredFlag}
-        flagged={flags.has(question.id)}
-        onToggleFlag={() => toggleFlag(question.id)}
-        onSubmit={(value) => submitAnswer(question, value)}
-        onSelfGrade={(c) => selfGrade(question.id, c)}
-        onNext={
-          mode === 'all'
-            ? next
-            : () => setLocalIndex((i) => Math.min(i + 1, items.length))
-        }
-        onPrev={
-          mode === 'all' ? prev : () => setLocalIndex((i) => Math.max(i - 1, 0))
-        }
-      />
+      {mode === 'memory' ? (
+        <ReviewCard
+          key={question.id}
+          question={question}
+          index={displayIndex}
+          total={items.length}
+          flagged={flags.has(question.id)}
+          onToggleFlag={() => toggleFlag(question.id)}
+          onMark={(c: boolean) => selfGrade(question.id, c)}
+          onNext={() => setLocalIndex((i) => Math.min(i + 1, items.length))}
+          onPrev={() => setLocalIndex((i) => Math.max(i - 1, 0))}
+        />
+      ) : (
+        <QuestionCard
+          key={question.id}
+          question={question}
+          index={displayIndex}
+          total={items.length}
+          initialValue={saved}
+          initialSubmitted={answeredFlag}
+          flagged={flags.has(question.id)}
+          onToggleFlag={() => toggleFlag(question.id)}
+          onSubmit={(value) => submitAnswer(question, value)}
+          onSelfGrade={(c) => selfGrade(question.id, c)}
+          onNext={
+            mode === 'all'
+              ? next
+              : () => setLocalIndex((i) => Math.min(i + 1, items.length))
+          }
+          onPrev={
+            mode === 'all' ? prev : () => setLocalIndex((i) => Math.max(i - 1, 0))
+          }
+        />
+      )}
     </main>
   )
 }

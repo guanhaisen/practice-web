@@ -1,5 +1,7 @@
 import { questions as builtinQuestions, type Question } from './questions'
 import { subjects, GENERAL_SUBJECT } from './subjects'
+import { loadFlags, saveFlags } from './flags'
+import { storageKeyFor, normalizeProgress } from './progress'
 
 export const BANK_KEY = 'quiz-bank-v1'
 export const VALID_TYPES = ['single', 'multiple', 'judge', 'fill'] as const
@@ -118,4 +120,46 @@ export function hasImportedBank(): boolean {
   } catch {
     return false
   }
+}
+
+// 导入后清理各科目进度/星标中已不存在题目的悬空记录，避免错题本与进度错乱
+function pruneOrphans(allQs: Question[]) {
+  const validIds = new Set(allQs.map((q) => q.id))
+  const subjectIds = Array.from(
+    new Set([...allQs.map((q) => q.subject), GENERAL_SUBJECT]),
+  )
+  for (const sid of subjectIds) {
+    try {
+      const raw = localStorage.getItem(storageKeyFor(sid))
+      if (!raw) continue
+      const p = normalizeProgress(JSON.parse(raw), Number.MAX_SAFE_INTEGER)
+      const wrongIds = p.wrongIds.filter((id) => validIds.has(id))
+      const answers: typeof p.answers = {}
+      for (const [id, a] of Object.entries(p.answers)) {
+        if (validIds.has(id)) answers[id] = a
+      }
+      const next = { ...p, wrongIds, answers, updatedAt: Date.now() }
+      localStorage.setItem(storageKeyFor(sid), JSON.stringify(next))
+    } catch {
+      /* 忽略 */
+    }
+  }
+  try {
+    const flags = loadFlags()
+    const kept = new Set([...flags].filter((id) => validIds.has(id)))
+    if (kept.size !== flags.size) saveFlags(kept)
+  } catch {
+    /* 忽略 */
+  }
+}
+
+// 按科目合并：仅覆盖上传涉及的科目，其余科目（含内置示例）保留
+export function mergeBank(newQs: Question[]): Question[] {
+  const current = loadBank()
+  const newSubjects = new Set(newQs.map((q) => q.subject))
+  const kept = current.filter((q) => !newSubjects.has(q.subject))
+  const merged = [...kept, ...newQs]
+  saveBank(merged)
+  pruneOrphans(merged)
+  return merged
 }

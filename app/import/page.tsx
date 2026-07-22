@@ -3,11 +3,12 @@ import { useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
 import {
   validateBank,
-  saveBank,
+  mergeBank,
   clearBank,
   hasImportedBank,
   type BankResult,
 } from '@/lib/bank'
+import { applyBackup } from '@/lib/backup'
 import { subjects, subjectName, GENERAL_SUBJECT } from '@/lib/subjects'
 
 const FORMAT_HINT = `[
@@ -27,6 +28,7 @@ export default function ImportPage() {
   const [result, setResult] = useState<BankResult | null>(null)
   const [saved, setSaved] = useState(false)
   const [imported, setImported] = useState(hasImportedBank())
+  const [restored, setRestored] = useState(false)
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
@@ -55,7 +57,7 @@ export default function ImportPage() {
 
   function save() {
     if (!result?.ok) return
-    saveBank(result.questions)
+    mergeBank(result.questions)
     setImported(true)
     setSaved(true)
   }
@@ -68,12 +70,31 @@ export default function ImportPage() {
     setResult(null)
   }
 
+  function handleRestore(e: ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    f.text()
+      .then((t) => {
+        const data = JSON.parse(t)
+        applyBackup(data)
+        setImported(hasImportedBank())
+        setRestored(true)
+      })
+      .catch(() => {
+        alert('备份文件解析失败')
+      })
+  }
+
   const dist = result?.ok
     ? result.questions.reduce<Record<string, number>>((acc, q) => {
         acc[q.subject] = (acc[q.subject] ?? 0) + 1
         return acc
       }, {})
     : null
+  const newSubjectIds = result?.ok
+    ? Array.from(new Set(result.questions.map((q) => q.subject)))
+    : []
+  const keptSubjects = subjects.filter((s) => !newSubjectIds.includes(s.id))
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
@@ -146,6 +167,13 @@ export default function ImportPage() {
               ))}
             </ul>
           )}
+          <p className="mt-2 text-xs text-zinc-600">
+            将按科目覆盖以上 {newSubjectIds.length} 个科目；其余科目（
+            {keptSubjects.map((s) => s.name).join('、') || '无'}）保留当前内容。
+          </p>
+          <p className="mt-1 text-xs text-zinc-500">
+            ⚠ 导入会整科替换，并清理这些科目中已不存在题目的进度与星标。
+          </p>
           <button
             type="button"
             onClick={save}
@@ -175,6 +203,23 @@ export default function ImportPage() {
           >
             清除导入（恢复示例）
           </button>
+        )}
+      </div>
+
+      <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <p className="mb-2 text-sm text-zinc-500">
+          从备份文件恢复（覆盖题库 / 进度 / 选科 / 星标）：
+        </p>
+        <input
+          type="file"
+          accept=".json,application/json"
+          onChange={handleRestore}
+          className="text-sm"
+        />
+        {restored && (
+          <p className="mt-2 text-sm text-green-600">
+            已从备份恢复，建议刷新页面查看。
+          </p>
         )}
       </div>
     </main>
