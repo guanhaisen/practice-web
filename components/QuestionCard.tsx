@@ -8,8 +8,10 @@ interface Props {
   index: number
   total: number
   initialValue?: UserValue
+  initialSubmitted?: boolean
   onSubmit: (value: UserValue) => void
   onNext: () => void
+  onPrev?: () => void
 }
 
 export default function QuestionCard({
@@ -17,13 +19,15 @@ export default function QuestionCard({
   index,
   total,
   initialValue,
+  initialSubmitted,
   onSubmit,
   onNext,
+  onPrev,
 }: Props) {
   const [value, setValue] = useState<UserValue>(
     initialValue ?? (question.type === 'multiple' ? [] : ''),
   )
-  const [submitted, setSubmitted] = useState(false)
+  const [submitted, setSubmitted] = useState(initialSubmitted ?? false)
 
   const isMultiple = question.type === 'multiple'
   const isFill = question.type === 'fill'
@@ -65,6 +69,14 @@ export default function QuestionCard({
         <span>
           第 {index + 1} / {total} 题
         </span>
+        <button
+          type="button"
+          onClick={() => onPrev?.()}
+          disabled={index === 0}
+          className="ml-auto rounded-lg border border-zinc-300 px-2 py-1 text-zinc-600 transition-colors hover:border-zinc-400 disabled:cursor-not-allowed disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300"
+        >
+          ← 上一题
+        </button>
       </div>
 
       <h2 className="mb-4 text-lg font-medium leading-7">{question.stem}</h2>

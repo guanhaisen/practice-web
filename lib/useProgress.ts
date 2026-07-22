@@ -62,6 +62,19 @@ export function useProgress() {
     })
   }, [])
 
+  const prev = useCallback(() => {
+    setProgress((p) => {
+      const prevIndex = Math.max(p.currentIndex - 1, 0)
+      const updated: Progress = { ...p, currentIndex: prevIndex, updatedAt: Date.now() }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      } catch {
+        /* 忽略写入失败 */
+      }
+      return updated
+    })
+  }, [])
+
   const reset = useCallback(() => {
     const empty = createEmptyProgress()
     try {
@@ -80,6 +93,7 @@ export function useProgress() {
     isComplete: isComplete(progress, TOTAL),
     submitAnswer,
     next,
+    prev,
     reset,
   }
 }

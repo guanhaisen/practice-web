@@ -6,7 +6,7 @@ import QuestionCard from '@/components/QuestionCard'
 import Summary from '@/components/Summary'
 
 export default function PracticePage() {
-  const { progress, total, isComplete, submitAnswer, next, reset } = useProgress()
+  const { progress, total, isComplete, submitAnswer, next, prev, reset } = useProgress()
   const i = progress.currentIndex
 
   if (isComplete) {
@@ -33,6 +33,7 @@ export default function PracticePage() {
   }
 
   const saved = progress.answers[question.id]?.value
+  const answered = !!progress.answers[question.id]
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
@@ -45,8 +46,10 @@ export default function PracticePage() {
         index={i}
         total={total}
         initialValue={saved}
+        initialSubmitted={answered}
         onSubmit={(value) => submitAnswer(i, value)}
         onNext={next}
+        onPrev={prev}
       />
     </main>
   )
