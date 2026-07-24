@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>大学生刷题 · v2-2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================
+   v2-2 · 暖人文克制
+   Warm, humane, calm — terra cotta accent
+   ============================================ */
+
+/* --- Reset --- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',-apple-system,'Segoe UI',sans-serif;
+  background:#fbfaf8;color:#1c1917;line-height:1.7;min-height:100vh;
+}
+
+/* --- Variables --- */
+:root{
+  --bg:#fbfaf8;
+  --surface:#fff;
+  --text:#1c1917;
+  --text-2nd:#78716c;
+  --text-3rd:#a8a29e;
+  --accent:#c2410c;
+  --accent-hover:#9a3412;
+  --accent-bg:#fff7ed;
+  --border:#e7e5e4;
+  --hairline:#f0efed;
+  --correct:#16a34a;
+  --correct-bg:#f0fdf4;
+  --radius:8px;
+}
+
+/* --- Layout --- */
+.app{max-width:1040px;margin:0 auto;padding:0 40px;min-height:100vh}
+
+/* ============================================
+   Toggle Bar
+   ============================================ */
+.toggle-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 0 14px;border-bottom:1px solid var(--hairline);
+  user-select:none;
+}
+.toggle-nav{display:flex;align-items:center;gap:14px;font-size:14px}
+.toggle-item{
+  cursor:pointer;color:var(--text-2nd);font-weight:500;
+  transition:color .15s;letter-spacing:.02em;
+  position:relative;padding:2px 0;
+}
+.toggle-item::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:2px;border-radius:1px;background:var(--accent);
+  transform:scaleX(0);transition:transform .2s;
+}
+.toggle-item.active{color:var(--accent)}
+.toggle-item.active::after{transform:scaleX(1)}
+.toggle-item:not(.active):hover{color:var(--text)}
+.toggle-sep{color:var(--text-3rd);font-weight:300}
+.toggle-label{
+  font-size:12px;color:var(--text-3rd);font-weight:400;
+  letter-spacing:.04em;
+}
+
+/* ============================================
+   Pages
+   ============================================ */
+.page{display:none;padding:0 0 60px}
+.page.active{display:block}
+
+/* ============================================
+   Homepage · Hero
+   ============================================ */
+.hero{padding:52px 0 44px}
+.hero-logo{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.hero-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);flex-shrink:0;
+}
+.hero h1{
+  font-size:30px;font-weight:700;color:var(--text);
+  letter-spacing:-.01em;line-height:1.3;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-sub{
+  font-size:15px;color:var(--text-2nd);margin-top:6px;
+  font-weight:400;letter-spacing:.02em;
+}
+
+/* ============================================
+   Subject List
+   ============================================ */
+.subject-list{display:flex;flex-direction:column}
+.subject-item{
+  display:flex;align-items:center;
+  padding:18px 0;border-bottom:1px solid var(--hairline);
+  transition:background .15s;cursor:default;
+}
+.subject-item:last-of-type{border-bottom:none}
+.subject-item:hover{background:rgba(194,65,12,.03);margin:0 -12px;padding:18px 12px;border-radius:0}
+.subject-item:last-of-type:hover{border-bottom:none}
+
+.subject-name{
+  flex:1;min-width:0;
+  font-size:16px;font-weight:500;color:var(--text);
+  letter-spacing:.01em;line-height:1.5;
+  padding-right:16px;
+}
+.subject-info{
+  display:flex;align-items:center;gap:36px;flex-shrink:0;
+}
+.subject-status{
+  font-size:14px;color:var(--text-2nd);font-weight:400;
+  white-space:nowrap;min-width:45px;text-align:right;
+}
+.subject-status.has-data{color:var(--accent);font-weight:500}
+.subject-stats{
+  display:flex;align-items:center;gap:20px;
+}
+.stat{
+  display:flex;align-items:center;gap:4px;
+  font-size:13px;color:var(--text-3rd);white-space:nowrap;
+}
+.stat-num{
+  font-size:13px;font-weight:500;color:var(--text-2nd);
+  min-width:1em;text-align:center;
+}
+.stat-num.zero{color:var(--text-3rd)}
+.stat-num.dash{color:var(--text-3rd)}
+
+/* comprehensive entry */
+.subject-item.comprehensive .subject-name{color:var(--text-2nd);font-weight:400}
+.subject-item.comprehensive .subject-status{color:var(--accent);font-weight:400}
+
+/* ============================================
+   Bottom Actions
+   ============================================ */
+.bottom-actions{
+  display:flex;align-items:center;gap:14px;
+  margin-top:36px;padding-top:28px;border-top:1px solid var(--hairline);
+}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:10px 22px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;font-family:inherit;
+  cursor:pointer;transition:all .15s;line-height:1.4;
+  border:none;text-decoration:none;
+}
+.btn-primary{
+  background:var(--accent);color:#fff;
+}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{
+  background:transparent;color:var(--text-2nd);
+  border:1px solid var(--border);
+}
+.btn-secondary:hover{border-color:var(--text-3rd);color:var(--text)}
+.text-link{
+  font-size:14px;color:var(--text-3rd);cursor:pointer;
+  background:none;border:none;font-family:inherit;
+  transition:color .15s;text-decoration:none;margin-left:auto;
+  padding:6px 0;
+}
+.text-link:hover{color:var(--accent)}
+
+/* ============================================
+   Practice Page · Header
+   ============================================ */
+.practice-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:24px 0 16px;border-bottom:1px solid var(--hairline);
+}
+.back-link{
+  display:flex;align-items:center;gap:6px;
+  font-size:14px;color:var(--text-2nd);cursor:pointer;
+  background:none;border:none;font-family:inherit;
+  transition:color .15s;padding:0;text-decoration:none;
+}
+.back-link:hover{color:var(--accent)}
+.practice-subject{
+  font-size:17px;font-weight:600;color:var(--text);
+  letter-spacing:.01em;
+}
+
+/* ============================================
+   Mode Tabs
+   ============================================ */
+.mode-tabs{
+  display:flex;align-items:center;gap:24px;
+  padding:12px 0 0;margin-bottom:0;
+}
+.mode-tab{
+  font-size:14px;font-weight:500;color:var(--text-2nd);
+  cursor:pointer;padding:4px 0;position:relative;
+  transition:color .15s;background:none;border:none;font-family:inherit;
+}
+.mode-tab::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:2px;border-radius:1px;background:var(--accent);
+  transform:scaleX(0);transition:transform .2s;
+}
+.mode-tab.active{color:var(--accent)}
+.mode-tab.active::after{transform:scaleX(1)}
+.mode-tab:not(.active):hover{color:var(--text)}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+.progress-area{
+  display:flex;align-items:center;gap:12px;
+  margin:10px 0 28px;
+}
+.progress-track{
+  flex:1;height:4px;border-radius:2px;
+  background:var(--hairline);overflow:hidden;
+}
+.progress-fill{
+  height:100%;border-radius:2px;
+  background:var(--accent);width:0.15%;transition:width .3s;
+}
+.progress-label{
+  font-size:13px;color:var(--text-3rd);font-weight:400;
+  white-space:nowrap;flex-shrink:0;
+}
+
+/* ============================================
+   Question Card
+   ============================================ */
+.question-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:32px 36px 36px;
+}
+
+/* meta row */
+.question-meta{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:22px;
+}
+.q-tag{
+  font-size:12px;font-weight:500;color:var(--accent);
+  background:var(--accent-bg);padding:3px 10px;border-radius:3px;
+  letter-spacing:.03em;
+}
+.q-number{
+  font-size:13px;color:var(--text-3rd);font-weight:400;
+  margin-right:auto;
+}
+.q-star{
+  font-size:16px;color:var(--text-3rd);cursor:pointer;
+  background:none;border:none;font-family:inherit;
+  line-height:1;transition:color .15s;padding:2px;
+}
+.q-star:hover{color:var(--accent)}
+.q-prev{
+  font-size:13px;color:var(--text-2nd);cursor:pointer;
+  background:none;border:none;font-family:inherit;
+  transition:color .15s;padding:2px 0;
+}
+.q-prev:hover{color:var(--accent)}
+
+/* question text */
+.q-text{
+  font-size:16px;font-weight:400;color:var(--text);
+  line-height:1.85;margin-bottom:28px;
+  letter-spacing:.01em;
+}
+
+/* options */
+.options{display:flex;flex-direction:column;gap:0;margin-bottom:0}
+.option{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border:1px solid var(--border);
+  border-radius:0;margin-top:-1px;cursor:pointer;
+  transition:all .12s;background:var(--surface);
+}
+.option:first-child{border-radius:6px 6px 0 0}
+.option:last-child{border-radius:0 0 6px 6px}
+.option:hover{border-color:var(--text-3rd);background:#fafaf9;z-index:1;position:relative}
+.option.correct{
+  border-color:var(--accent);background:var(--accent-bg);
+  z-index:2;position:relative;
+}
+.option-indicator{
+  flex-shrink:0;width:20px;height:20px;border-radius:50%;
+  border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:transparent;transition:all .15s;
+}
+.option.correct .option-indicator{
+  border-color:var(--correct);background:var(--correct-bg);
+  color:var(--correct);font-weight:600;
+}
+.option-label{
+  flex-shrink:0;font-size:14px;font-weight:500;color:var(--text-2nd);
+  width:16px;text-align:center;
+}
+.option-text{
+  font-size:15px;color:var(--text);font-weight:400;
+  letter-spacing:.01em;
+}
+.option.correct .option-text{color:var(--text);font-weight:500}
+
+/* ============================================
+   Feedback Area
+   ============================================ */
+.feedback{
+  margin-top:24px;padding:20px 20px 0;
+  border-top:1px solid var(--hairline);
+}
+.feedback-header{
+  display:flex;align-items:center;gap:6px;
+  font-size:14px;font-weight:500;color:var(--correct);
+  margin-bottom:14px;
+}
+.feedback-row{
+  display:flex;align-items:flex-start;gap:12px;
+  margin-bottom:10px;font-size:14px;line-height:1.7;
+}
+.feedback-row:last-child{margin-bottom:0}
+.fb-label{
+  flex-shrink:0;color:var(--text-2nd);font-weight:400;
+  min-width:4em;
+}
+.fb-value{
+  color:var(--text);font-weight:400;
+}
+.fb-value.empty{
+  color:var(--text-3rd);font-style:normal;
+}
+
+/* next button */
+.next-btn{
+  margin-top:28px;width:100%;
+  padding:14px 0;border-radius:var(--radius);
+  font-size:15px;font-weight:600;font-family:inherit;
+  background:var(--accent);color:#fff;border:none;
+  cursor:pointer;transition:background .15s;
+  letter-spacing:.02em;
+}
+.next-btn:hover{background:var(--accent-hover)}
+
+/* ============================================
+   Responsive (within 1440×900)
+   ============================================ */
+@media(max-width:780px){
+  .app{padding:0 24px}
+  .subject-info{gap:20px;flex-wrap:wrap;justify-content:flex-end}
+  .subject-stats{gap:12px}
+  .bottom-actions{flex-wrap:wrap}
+  .text-link{margin-left:0}
+  .question-card{padding:24px 20px}
+  .practice-header{flex-direction:column;align-items:flex-start;gap:8px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ==========================================
+       Toggle Bar
+       ========================================== -->
+  <div class="toggle-bar">
+    <div class="toggle-nav">
+      <span class="toggle-item active" data-page="home">首页</span>
+      <span class="toggle-sep">/</span>
+      <span class="toggle-item" data-page="practice">练习页</span>
+    </div>
+    <span class="toggle-label">v2-2 · 暖人文克制</span>
+  </div>
+
+  <!-- ==========================================
+       Homepage
+       ========================================== -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-logo"><span class="hero-dot"></span></div>
+      <h1>大学生刷题</h1>
+      <p class="hero-sub">刷题是最好的复习方式</p>
+    </div>
+
+    <div class="subject-list">
+      <!-- 14 subjects + 综合练习 -->
+      <div class="subject-item">
+        <span class="subject-name">高等数学(上)</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">高等数学(下)</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">大学英语 I</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">大学英语 II</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">大学英语 III</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">党史</span>
+        <div class="subject-info">
+          <span class="subject-status has-data">共 680 题</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num zero">0</span></span>
+            <span class="stat">难题 <span class="stat-num zero">0</span></span>
+            <span class="stat">待复习 <span class="stat-num zero">0</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">马克思主义原理</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">大学物理</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">线性代数</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">概率数理统计</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">思想道德与法治</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">中国近现代史纲要</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">毛泽东思想和中国特色社会主义理论体系概论</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="subject-item">
+        <span class="subject-name">形势与政策</span>
+        <div class="subject-info">
+          <span class="subject-status">待导入</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+      <!-- 综合练习 (兜底) -->
+      <div class="subject-item comprehensive">
+        <span class="subject-name">综合练习</span>
+        <div class="subject-info">
+          <span class="subject-status has-data">680 题（含全部示例）</span>
+          <div class="subject-stats">
+            <span class="stat">错题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">难题 <span class="stat-num dash">&mdash;</span></span>
+            <span class="stat">待复习 <span class="stat-num dash">&mdash;</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="btn btn-primary">开始刷题</button>
+      <button class="btn btn-secondary">错题本</button>
+      <button class="btn btn-secondary">历史记录</button>
+      <button class="text-link">修改选科</button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       Practice Page
+       ========================================== -->
+  <div class="page" id="page-practice">
+    <div class="practice-header">
+      <button class="back-link"><span>&larr;</span> 退出（进度已保存）</button>
+      <span class="practice-subject">党史</span>
+    </div>
+
+    <div class="mode-tabs">
+      <button class="mode-tab active">顺序</button>
+      <button class="mode-tab">随机</button>
+    </div>
+
+    <div class="progress-area">
+      <div class="progress-track"><div class="progress-fill"></div></div>
+      <span class="progress-label">1 / 680</span>
+    </div>
+
+    <div class="question-card">
+      <div class="question-meta">
+        <span class="q-tag">单选题</span>
+        <span class="q-number">第 1 / 680 题</span>
+        <button class="q-star" title="收藏本题">&#9734;</button>
+        <button class="q-prev">&larr; 上一题</button>
+      </div>
+
+      <p class="q-text">中国共产党一经成立，就把实现（ ）作为党的最高理想和最终目标。</p>
+
+      <div class="options">
+        <!-- A · correct -->
+        <div class="option correct">
+          <span class="option-indicator">&#10003;</span>
+          <span class="option-label">A</span>
+          <span class="option-text">共产主义</span>
+        </div>
+        <!-- B -->
+        <div class="option">
+          <span class="option-indicator"></span>
+          <span class="option-label">B</span>
+          <span class="option-text">社会主义</span>
+        </div>
+        <!-- C -->
+        <div class="option">
+          <span class="option-indicator"></span>
+          <span class="option-label">C</span>
+          <span class="option-text">资本主义</span>
+        </div>
+        <!-- D -->
+        <div class="option">
+          <span class="option-indicator"></span>
+          <span class="option-label">D</span>
+          <span class="option-text">帝国主义</span>
+        </div>
+      </div>
+
+      <div class="feedback">
+        <div class="feedback-header">
+          <span>&#10003;</span> 已提交 · 回答正确
+        </div>
+        <div class="feedback-row">
+          <span class="fb-label">参考答案</span>
+          <span class="fb-value">共产主义</span>
+        </div>
+        <div class="feedback-row">
+          <span class="fb-label">解析</span>
+          <span class="fb-value empty">（本题暂无解析）</span>
+        </div>
+      </div>
+
+      <button class="next-btn">下一题</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var items = document.querySelectorAll('.toggle-item');
+  var pages = {
+    home: document.getElementById('page-home'),
+    practice: document.getElementById('page-practice')
+  };
+
+  items.forEach(function(item){
+    item.addEventListener('click', function(){
+      items.forEach(function(i){ i.classList.remove('active'); });
+      this.classList.add('active');
+      var page = this.getAttribute('data-page');
+      for (var key in pages) {
+        pages[key].classList.toggle('active', key === page);
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

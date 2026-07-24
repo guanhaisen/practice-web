@@ -13,6 +13,7 @@ import {
 } from '@/lib/progress'
 import { loadSelectedSubjects, saveSelectedSubjects } from '@/lib/userPrefs'
 import type { Question } from '@/lib/questions'
+import ProgressRing from '@/components/ProgressRing'
 
 function countOf(bank: Question[], subjectId: string): number {
   return bank.filter((q) => q.subject === subjectId).length
@@ -88,7 +89,7 @@ export default function Home() {
 
   if (!hydrated) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center text-zinc-500">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16 text-center text-muted">
         加载中…
       </main>
     )
@@ -96,9 +97,11 @@ export default function Home() {
 
   if (editing) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
-        <h1 className="mb-2 text-3xl font-bold tracking-tight">选择练习科目</h1>
-        <p className="mb-8 text-zinc-500">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
+        <h1 className="mb-2 text-3xl font-bold tracking-tight text-ink">
+          选择练习科目
+        </h1>
+        <p className="mb-8 text-muted">
           勾选你要练习的科目，确认后即可开始；后续可随时修改。
         </p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -113,12 +116,12 @@ export default function Home() {
                 className={[
                   'rounded-xl border px-4 py-4 text-center transition-colors',
                   on
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-                    : 'border-zinc-200 hover:border-zinc-400 dark:border-zinc-800',
+                    ? 'border-accent bg-accent-soft text-accent'
+                    : 'border-line text-ink hover:border-line-strong',
                 ].join(' ')}
               >
                 <div className="font-medium">{s.name}</div>
-                <div className="mt-1 text-xs text-zinc-400">
+                <div className="mt-1 text-xs text-faint">
                   {count > 0 ? `${count} 题` : '暂无'}
                 </div>
               </button>
@@ -129,7 +132,7 @@ export default function Home() {
           type="button"
           onClick={confirm}
           disabled={picks.size === 0}
-          className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-medium text-white disabled:opacity-40"
+          className="mt-6 w-full rounded-xl bg-accent px-5 py-3 font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-40"
         >
           确认并开始（已选 {picks.size} 科）
         </button>
@@ -140,12 +143,15 @@ export default function Home() {
   const chosen = subjects.filter((s) => selected.includes(s.id))
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">大学生刷题</h1>
-      <p className="mb-8 text-zinc-500">
+    <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-16">
+      <h1 className="mb-2 text-3xl font-bold tracking-tight text-ink">
+        大学生刷题
+      </h1>
+      <p className="mb-8 text-muted">
         已选科目，点击开始练习；进度按科目自动保存在本地。
       </p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {chosen.map((s) => {
           const total = countOf(bank, s.id)
           const prog = readProgress(s.id, total)
@@ -158,51 +164,64 @@ export default function Home() {
           const dueCount = bank.filter(
             (q) => q.subject === s.id && (srs[q.id]?.due ?? 0) <= Date.now(),
           ).length
+          const pct = total ? Math.round((answered / total) * 100) : 0
           return (
             <div
               key={s.id}
-              className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+              className="flex items-center gap-4 rounded-xl border border-line bg-surface p-4"
             >
-              <Link
-                href={`/practice?subject=${s.id}`}
-                className="block font-medium hover:text-blue-600"
-              >
-                {s.name}
-              </Link>
-              <div className="mt-1 text-xs text-zinc-400">
-                {empty
-                  ? '待导入'
-                  : `共 ${total} 题${answered > 0 ? ` · 已做 ${answered}/${total}` : ''}`}
+              <div className="min-w-0 flex-1">
+                <Link
+                  href={`/practice?subject=${s.id}`}
+                  className="block font-medium text-ink transition-colors hover:text-accent"
+                >
+                  {s.name}
+                </Link>
+                <div className="mt-1 text-xs text-faint">
+                  {empty
+                    ? '待导入'
+                    : `共 ${total} 题${
+                        answered > 0 ? ` · 已做 ${answered}/${total}` : ''
+                      }`}
+                </div>
+                {!empty && (
+                  <div className="mt-2 flex items-center gap-3 text-xs">
+                    <Link
+                      href={`/wrong?subject=${s.id}`}
+                      className="text-danger transition-colors hover:underline"
+                    >
+                      错题 {wrongCount}
+                    </Link>
+                    <Link
+                      href={`/practice?subject=${s.id}&mode=flags`}
+                      className="text-warn transition-colors hover:underline"
+                    >
+                      难题 {flagCount}
+                    </Link>
+                    {dueCount > 0 && (
+                      <Link
+                        href={`/practice?subject=${s.id}&mode=review`}
+                        className="text-accent transition-colors hover:underline"
+                      >
+                        复习 {dueCount}
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => resetSubject(s.id)}
+                      className="ml-auto text-faint transition-colors hover:text-danger hover:underline"
+                    >
+                      重置
+                    </button>
+                  </div>
+                )}
               </div>
               {!empty && (
-                <div className="mt-2 flex items-center gap-3 text-xs">
-                  <Link
-                    href={`/wrong?subject=${s.id}`}
-                    className="text-red-500 hover:underline"
-                  >
-                    错题 {wrongCount}
-                  </Link>
-                  <Link
-                    href={`/practice?subject=${s.id}&mode=flags`}
-                    className="text-amber-500 hover:underline"
-                  >
-                    难题 {flagCount}
-                  </Link>
-                  {dueCount > 0 && (
-                    <Link
-                      href={`/practice?subject=${s.id}&mode=review`}
-                      className="text-indigo-500 hover:underline"
-                    >
-                      复习 {dueCount}
-                    </Link>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => resetSubject(s.id)}
-                    className="ml-auto text-zinc-400 hover:text-red-500 hover:underline"
-                  >
-                    重置
-                  </button>
+                <div className="relative shrink-0">
+                  <ProgressRing value={total ? answered / total : 0} />
+                  <span className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-muted">
+                    {pct}%
+                  </span>
                 </div>
               )}
             </div>
@@ -213,26 +232,26 @@ export default function Home() {
       <div className="mt-4">
         <Link
           href={`/practice?subject=${GENERAL_SUBJECT}`}
-          className="block rounded-xl border border-dashed border-zinc-300 px-4 py-3 text-center text-sm text-zinc-500 dark:border-zinc-700"
+          className="block rounded-xl border border-dashed border-line-strong px-4 py-3 text-center text-sm text-muted transition-colors hover:border-accent hover:text-accent"
         >
           {GENERAL_NAME}（{bank.length} 题，含全部示例）
         </Link>
       </div>
 
-      <div className="mt-3 flex justify-center gap-4">
-        <Link href="/import" className="text-sm text-blue-600 hover:underline">
+      <div className="mt-3 flex flex-wrap justify-center gap-4">
+        <Link href="/import" className="text-sm text-accent hover:underline">
           导入 / 管理题库
         </Link>
-        <Link href="/history" className="text-sm text-blue-600 hover:underline">
+        <Link href="/history" className="text-sm text-accent hover:underline">
           练习历史
         </Link>
-        <Link href="/wrong" className="text-sm text-blue-600 hover:underline">
+        <Link href="/wrong" className="text-sm text-accent hover:underline">
           错题本
         </Link>
         <button
           type="button"
           onClick={downloadBackup}
-          className="text-sm text-blue-600 underline-offset-2 hover:underline"
+          className="text-sm text-accent underline-offset-2 hover:underline"
         >
           导出备份
         </button>
@@ -244,7 +263,7 @@ export default function Home() {
           setPicks(new Set(selected))
           setEditing(true)
         }}
-        className="mt-6 w-full rounded-xl border border-zinc-300 px-5 py-3 font-medium dark:border-zinc-700"
+        className="mt-6 w-full rounded-xl border border-line-strong px-5 py-3 font-medium text-ink transition-colors hover:border-accent"
       >
         修改选科
       </button>

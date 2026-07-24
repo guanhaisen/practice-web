@@ -108,12 +108,12 @@ function PracticeInner() {
     mode === 'all'
       ? ordered
       : mode === 'wrong'
-        ? ordered.filter((q) => progress.wrongIds.includes(q.id))
-        : mode === 'memory'
-          ? ordered
-          : mode === 'review'
-            ? ordered.filter((q) => (srs[q.id]?.due ?? 0) <= now)
-            : ordered.filter((q) => flags.has(q.id))
+      ? ordered.filter((q) => progress.wrongIds.includes(q.id))
+      : mode === 'memory'
+        ? ordered
+        : mode === 'review'
+          ? ordered.filter((q) => (srs[q.id]?.due ?? 0) <= now)
+          : ordered.filter((q) => flags.has(q.id))
 
   const displayIndex = mode === 'all' ? progress.currentIndex : localIndex
   const question = items[displayIndex]
@@ -175,7 +175,7 @@ function PracticeInner() {
 
   if (!hydrated) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center text-zinc-500">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center text-muted">
         加载中…
       </main>
     )
@@ -183,9 +183,9 @@ function PracticeInner() {
 
   if (mode === 'all' && allItems.length === 0) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center text-zinc-500">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center text-muted">
         该科目暂无题目，
-        <Link href="/" className="text-blue-600">
+        <Link href="/" className="text-accent">
           返回首页
         </Link>
       </main>
@@ -194,9 +194,9 @@ function PracticeInner() {
 
   if (mode === 'all' && isComplete) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
         <Summary progress={progress} total={total} subject={subject} onRestart={reset} />
-        <Link href="/" className="mt-4 block text-center text-sm text-blue-600">
+        <Link href="/" className="mt-4 block text-center text-sm text-accent">
           返回首页
         </Link>
       </main>
@@ -205,9 +205,9 @@ function PracticeInner() {
 
   if (items.length === 0) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center text-zinc-500">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center text-muted">
         {mode === 'wrong' ? '该科目暂无错题，' : '该科目暂无标记题，'}
-        <Link href={`/practice?subject=${subject}`} className="text-blue-600">
+        <Link href={`/practice?subject=${subject}`} className="text-accent">
           去全部题目练习
         </Link>
       </main>
@@ -216,11 +216,11 @@ function PracticeInner() {
 
   if (!question) {
     return (
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center">
-        <p className="mb-4 text-zinc-600">本批练习已完成 🎉</p>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center">
+        <p className="mb-4 text-ink">本批练习已完成</p>
         <Link
           href={`/practice?subject=${subject}`}
-          className="rounded-xl bg-blue-600 px-5 py-2.5 font-medium text-white"
+          className="rounded-xl bg-accent px-5 py-2.5 font-medium text-white transition-colors hover:bg-accent-hover"
         >
           返回全部题目
         </Link>
@@ -232,16 +232,16 @@ function PracticeInner() {
   const answeredFlag = !!progress.answers[question.id]
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
+    <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
       <div className="mb-3 flex items-center justify-between">
-        <Link href="/" className="text-sm text-blue-600">
+        <Link href="/" className="text-sm text-accent">
           ← 退出（进度已保存）
         </Link>
-        <span className="text-sm text-zinc-500">{subjectName(subject)}</span>
+        <span className="text-sm text-muted">{subjectName(subject)}</span>
       </div>
 
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex gap-2 text-sm">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-1 text-sm">
           <Tab href={`/practice?subject=${subject}`} active={mode === 'all'}>
             全部
           </Tab>
@@ -261,15 +261,15 @@ function PracticeInner() {
         <button
           type="button"
           onClick={toggleShuffle}
-          className="rounded-lg border border-zinc-300 px-3 py-1 text-sm text-zinc-500 transition-colors hover:border-zinc-400 dark:border-zinc-700"
+          className="shrink-0 rounded-lg border border-line px-3 py-1 text-sm text-muted transition-colors hover:border-line-strong"
         >
-          {shuffle ? '随机 🔀' : '顺序 ⟳'}
+          {shuffle ? '随机' : '顺序'}
         </button>
       </div>
 
       {mode !== 'memory' && mode !== 'review' && (
         <div className="mb-4">
-          <div className="mb-1 flex justify-between text-xs text-zinc-500">
+          <div className="mb-1 flex justify-between text-xs text-muted">
             <span>
               已答 {answered}/{items.length}
             </span>
@@ -277,13 +277,13 @@ function PracticeInner() {
               正确率 {accuracy}%（{correctCount}/{graded.length}）
             </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-surface-2">
             <div
-              className="h-2 rounded-full bg-blue-600 transition-all"
+              className="h-2 rounded-full bg-accent transition-all"
               style={{ width: `${items.length ? (answered / items.length) * 100 : 0}%` }}
             />
           </div>
-          <div className="mt-1 text-xs text-zinc-500">剩余 {remaining} 题</div>
+          <div className="mt-1 text-xs text-muted">剩余 {remaining} 题</div>
         </div>
       )}
 
@@ -341,10 +341,10 @@ function Tab({
     <Link
       href={href}
       className={[
-        'rounded-lg border px-3 py-1 transition-colors',
+        'border-b-2 px-2.5 py-1 transition-colors',
         active
-          ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-950'
-          : 'border-zinc-300 text-zinc-500 hover:border-zinc-400 dark:border-zinc-700',
+          ? 'border-accent font-medium text-accent'
+          : 'border-transparent text-muted hover:text-ink',
       ].join(' ')}
     >
       {children}
@@ -356,7 +356,7 @@ export default function PracticePage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16 text-center text-zinc-500">
+        <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center text-muted">
           加载中…
         </main>
       }

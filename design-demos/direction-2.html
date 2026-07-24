@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大学生刷题 · 方向二</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px}
+body{
+  background:#f5f0e8;
+  font-family:'Noto Sans SC','Source Han Sans SC','PingFang SC','Microsoft YaHei','Hiragino Sans GB',sans-serif;
+  color:#1a1a1a;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+
+/* ── Toggle bar ── */
+.toggle-bar{
+  position:sticky;top:0;z-index:100;
+  background:#1a1a1a;color:#ccc;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 24px;font-size:13px;
+  border-bottom:2px solid #b22222;
+  flex-wrap:wrap;
+}
+.toggle-bar .toggle-btn{
+  background:transparent;border:1px solid #555;color:#aaa;
+  padding:4px 16px;border-radius:0;cursor:pointer;
+  font-family:inherit;font-size:13px;transition:all .15s;
+}
+.toggle-bar .toggle-btn:hover{color:#fff;border-color:#888}
+.toggle-bar .toggle-btn.active{background:#b22222;color:#fff;border-color:#b22222}
+.toggle-bar .dir-label{margin-left:auto;font-size:12px;color:#888;letter-spacing:.3px}
+
+/* ── Container ── */
+.container{max-width:1040px;margin:0 auto;padding:0 32px 48px}
+
+/* ── Screens ── */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ── Stamp ── */
+.stamp-wrap{display:flex;align-items:center;gap:20px;padding:40px 0 0}
+.stamp{
+  width:64px;height:64px;flex-shrink:0;
+  background:#b22222;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid #8b1a1a;
+  position:relative;
+}
+.stamp::after{
+  content:'';position:absolute;inset:3px;
+  border:1px solid rgba(255,255,255,.25);
+}
+.stamp-char{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-weight:900;font-size:36px;color:#fff;line-height:1;
+  letter-spacing:0;
+}
+.home-title{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-weight:700;font-size:28px;color:#1a1a1a;line-height:1.3;
+}
+.home-subtitle{
+  font-size:14px;color:#666;margin-top:2px;line-height:1.6;
+}
+
+/* ── 目录 divider ── */
+.toc-divider{
+  display:flex;align-items:center;gap:16px;
+  margin:40px 0 20px;
+}
+.toc-divider::before,.toc-divider::after{
+  content:'';flex:1;height:1px;background:#1a1a1a;
+}
+.toc-divider .toc-label{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-weight:600;font-size:18px;color:#1a1a1a;letter-spacing:6px;
+  white-space:nowrap;
+}
+
+/* ── Subject list (目录 style) ── */
+.subject-list{border:2px solid #1a1a1a;border-bottom:none}
+.subject-entry{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 18px;
+  border-bottom:1px solid #d0c8b8;
+  transition:background .15s;
+  cursor:default;
+}
+.subject-entry:hover{background:rgba(178,34,34,.04)}
+.subject-entry:last-child{border-bottom:1px solid #1a1a1a}
+
+.subject-entry .entry-num{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-weight:600;font-size:15px;color:#1a1a1a;
+  min-width:2.2em;flex-shrink:0;
+}
+.subject-entry .entry-name{
+  font-size:15px;font-weight:500;flex:1;min-width:0;
+  color:#1a1a1a;
+}
+.subject-entry .entry-meta{
+  font-size:13px;color:#666;white-space:nowrap;flex-shrink:0;
+  min-width:6em;text-align:right;
+}
+.subject-entry .entry-stats{
+  display:flex;gap:10px;font-size:13px;flex-shrink:0;
+}
+.subject-entry .entry-stats .stat{
+  white-space:nowrap;
+}
+.subject-entry .entry-stats .stat-red{color:#b22222}
+.subject-entry .entry-stats .stat-amber{color:#b8860b}
+.subject-entry .entry-stats .stat-indigo{color:#4a5568}
+.subject-entry .entry-stats .stat-dash{color:#aaa}
+
+/* special: 综合练习 */
+.subject-entry.special{background:rgba(178,34,34,.03)}
+.subject-entry.special .entry-num{color:#b22222}
+
+/* ── Home actions ── */
+.home-actions{
+  display:flex;flex-wrap:wrap;gap:4px 0;
+  margin:28px 0 0;
+  padding:16px 0;
+  border-top:1px solid #d0c8b8;
+  border-bottom:1px solid #d0c8b8;
+}
+.home-actions .action-link{
+  font-size:14px;color:#555;text-decoration:none;
+  padding:4px 18px 4px 0;
+  border-right:1px solid #d0c8b8;
+  margin-right:18px;
+  transition:color .15s;
+  cursor:pointer;
+}
+.home-actions .action-link:last-child{border-right:none;margin-right:0}
+.home-actions .action-link:hover{color:#b22222}
+
+.home-modify{
+  display:flex;justify-content:center;margin:28px 0 0;
+}
+.home-modify button{
+  background:transparent;border:1px solid #1a1a1a;color:#1a1a1a;
+  padding:8px 36px;font-size:14px;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+  letter-spacing:1px;
+}
+.home-modify button:hover{background:#1a1a1a;color:#f5f0e8}
+
+/* ── Practice header ── */
+.practice-header{
+  display:flex;align-items:baseline;gap:12px;
+  padding:28px 0 0;
+  border-bottom:2px solid #1a1a1a;
+  padding-bottom:12px;
+  margin-bottom:0;
+}
+.practice-header .back-btn{
+  font-size:14px;color:#555;text-decoration:none;
+  cursor:pointer;transition:color .15s;
+  white-space:nowrap;
+}
+.practice-header .back-btn:hover{color:#b22222}
+.practice-header .subject-title{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-weight:700;font-size:24px;color:#1a1a1a;margin-left:auto;
+}
+
+/* ── Tabs ── */
+.practice-tabs{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid #d0c8b8;
+  margin-top:0;
+}
+.practice-tabs .tabs-left{display:flex;gap:0;flex:1}
+.practice-tabs .tab-btn{
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  padding:10px 18px;font-size:14px;font-family:inherit;
+  color:#666;cursor:pointer;transition:all .15s;
+  margin-bottom:-1px;
+}
+.practice-tabs .tab-btn:hover{color:#1a1a1a}
+.practice-tabs .tab-btn.active{
+  color:#b22222;border-bottom-color:#b22222;font-weight:600;
+}
+.practice-tabs .tabs-right{
+  display:flex;gap:0;flex-shrink:0;
+}
+.practice-tabs .mode-btn{
+  background:transparent;border:1px solid #d0c8b8;
+  padding:6px 14px;font-size:13px;font-family:inherit;
+  color:#555;cursor:pointer;transition:all .15s;
+  margin-left:-1px;
+}
+.practice-tabs .mode-btn:first-child{margin-left:0}
+.practice-tabs .mode-btn:hover{background:#f0ebe3;color:#1a1a1a}
+.practice-tabs .mode-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+/* ── Progress ── */
+.practice-progress{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;
+  padding:14px 0 10px;
+  font-size:14px;color:#1a1a1a;
+}
+.practice-progress .prog-text{font-weight:500}
+.practice-progress .prog-acc{color:#666;font-size:13px}
+.practice-progress .prog-bar-wrap{
+  flex:1;min-width:120px;height:4px;background:#e0d8c8;position:relative;
+}
+.practice-progress .prog-bar-fill{
+  height:100%;background:#b22222;width:0.147%;
+  transition:width .3s;
+}
+.practice-progress .prog-label{
+  font-size:12px;color:#888;font-feature-settings:"tnum";
+}
+
+/* ── Question card (exam paper) ── */
+.question-card{
+  margin:20px 0 0;
+  border:2px solid #1a1a1a;
+  background:#faf8f5;
+  position:relative;
+}
+.q-exam-header{
+  display:flex;align-items:center;justify-content:center;gap:20px;
+  padding:8px 20px;
+  background:#1a1a1a;color:#f5f0e8;
+  font-size:12px;letter-spacing:1px;
+}
+.q-exam-header .exam-seal{color:#b22222;font-weight:700;letter-spacing:2px}
+.q-exam-header .exam-subject{font-size:12px;color:#ccc}
+
+.q-card-inner{padding:24px 28px 28px}
+
+.q-header{
+  display:flex;align-items:baseline;gap:12px;
+  margin-bottom:18px;
+  padding-bottom:10px;
+  border-bottom:1px solid #e0d8c8;
+  flex-wrap:wrap;
+}
+.q-header .q-number{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-weight:700;font-size:17px;color:#1a1a1a;
+}
+.q-header .q-type{
+  font-size:13px;color:#666;
+}
+.q-header .q-pos{
+  font-size:13px;color:#888;margin-left:auto;
+  font-feature-setting:"tnum";
+}
+.q-header .q-bookmark{
+  font-size:16px;color:#aaa;cursor:pointer;transition:color .15s;
+  line-height:1;user-select:none;
+}
+.q-header .q-bookmark:hover{color:#b22222}
+.q-header .q-bookmark.active{color:#b22222}
+.q-header .q-prev{
+  font-size:13px;color:#555;cursor:pointer;text-decoration:none;
+  padding:2px 8px;border:1px solid #d0c8b8;transition:all .15s;
+  line-height:1.4;
+}
+.q-header .q-prev:hover{color:#b22222;border-color:#b22222}
+
+.q-score-box{
+  margin-left:8px;
+  border:1px solid #1a1a1a;padding:2px 10px;
+  font-size:12px;color:#666;white-space:nowrap;
+}
+.q-score-box .score-val{font-family:'Noto Serif SC',serif}
+
+.q-body{
+  margin-bottom:20px;
+}
+.q-body p{
+  font-size:16px;line-height:1.9;color:#1a1a1a;
+  text-indent:0;
+}
+
+/* ── Options (答题区 style) ── */
+.q-options{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-bottom:20px;
+}
+.q-options .option{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  border:1px solid #d0c8b8;
+  background:#faf8f5;
+  cursor:default;
+  transition:all .15s;
+  min-height:44px;
+}
+.q-options .option .opt-box{
+  width:18px;height:18px;flex-shrink:0;
+  border:1.5px solid #888;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#1a1a1a;transition:all .15s;
+}
+.q-options .option .opt-letter{
+  font-size:14px;font-weight:600;color:#1a1a1a;flex-shrink:0;
+}
+.q-options .option .opt-text{
+  font-size:15px;color:#1a1a1a;
+}
+
+/* correct state */
+.q-options .option.correct{
+  border-color:#b22222;background:#fef5f5;
+}
+.q-options .option.correct .opt-box{
+  border-color:#b22222;background:#b22222;color:#fff;
+}
+.q-options .option.correct .opt-mark{
+  color:#b22222;font-size:14px;font-weight:700;margin-left:auto;flex-shrink:0;
+}
+
+/* ── Result area ── */
+.q-result{
+  margin-top:6px;padding:16px 18px;
+  border:1px dashed #b22222;
+  background:#fef5f5;
+}
+.q-result .result-status{
+  font-size:14px;font-weight:600;color:#b22222;margin-bottom:6px;
+}
+.q-result .result-status .check{color:#b22222;font-weight:700}
+.q-result .result-ref{
+  font-size:14px;color:#1a1a1a;margin-bottom:4px;
+}
+.q-result .result-ref strong{font-weight:600}
+.q-result .result-analysis{
+  font-size:13px;color:#888;line-height:1.6;
+}
+
+/* ── Question nav ── */
+.q-nav{
+  display:flex;justify-content:flex-end;gap:12px;
+  margin-top:20px;
+}
+.q-nav .nav-btn{
+  background:#1a1a1a;color:#fff;border:none;
+  padding:8px 28px;font-size:14px;font-family:inherit;
+  cursor:pointer;transition:background .15s;
+  letter-spacing:.5px;
+}
+.q-nav .nav-btn:hover{background:#b22222}
+.q-nav .nav-btn.secondary{
+  background:transparent;border:1px solid #1a1a1a;color:#1a1a1a;
+}
+.q-nav .nav-btn.secondary:hover{background:#1a1a1a;color:#fff}
+
+/* ── Responsive ── */
+@media(max-width:720px){
+  .container{padding:0 16px 32px}
+  .q-options{grid-template-columns:1fr}
+  .subject-entry{flex-wrap:wrap;gap:4px 12px;padding:8px 14px}
+  .subject-entry .entry-stats{margin-left:auto}
+  .practice-tabs .tab-btn{padding:8px 10px;font-size:13px}
+  .q-card-inner{padding:16px}
+  .home-actions .action-link{padding:4px 12px 4px 0;margin-right:12px;font-size:13px}
+}
+
+/* ── Print-like detail ── */
+.text-wrap-pretty{text-wrap:pretty}
+hr.thin{border:none;border-top:1px solid #e0d8c8;margin:16px 0}
+</style>
+</head>
+<body>
+
+<!-- ═══ Toggle bar ═══ -->
+<div class="toggle-bar">
+  <button class="toggle-btn active" data-target="screen-home">首页</button>
+  <button class="toggle-btn" data-target="screen-practice">练习页</button>
+  <span class="dir-label">方向二 · 考卷文档 / 印章红</span>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 1 · 首页
+     ════════════════════════════════════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="container">
+
+    <!-- Stamp + Title -->
+    <div class="stamp-wrap">
+      <div class="stamp"><span class="stamp-char">刷</span></div>
+      <div>
+        <h1 class="home-title">大学生刷题</h1>
+        <p class="home-subtitle">已选科目，点击开始练习；进度按科目自动保存在本地。</p>
+      </div>
+    </div>
+
+    <!-- 目录 divider -->
+    <div class="toc-divider">
+      <span class="toc-label">目 录</span>
+    </div>
+
+    <!-- Subject list (目录 style) -->
+    <div class="subject-list">
+      <!-- 1. 党史 -->
+      <div class="subject-entry">
+        <span class="entry-num">一</span>
+        <span class="entry-name">党史</span>
+        <span class="entry-meta">共 680 题</span>
+        <span class="entry-stats">
+          <span class="stat stat-red">错 0</span>
+          <span class="stat stat-amber">难 0</span>
+          <span class="stat stat-indigo">复习 —</span>
+        </span>
+      </div>
+      <!-- 2–14: 待导入 -->
+      <div class="subject-entry">
+        <span class="entry-num">二</span>
+        <span class="entry-name">高等数学（上）</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">三</span>
+        <span class="entry-name">高等数学（下）</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">四</span>
+        <span class="entry-name">大学英语 I</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">五</span>
+        <span class="entry-name">大学英语 II</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">六</span>
+        <span class="entry-name">大学英语 III</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">七</span>
+        <span class="entry-name">马克思主义原理</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">八</span>
+        <span class="entry-name">大学物理</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">九</span>
+        <span class="entry-name">线性代数</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">十</span>
+        <span class="entry-name">概率数理统计</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">十一</span>
+        <span class="entry-name">思想道德与法治</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">十二</span>
+        <span class="entry-name">中国近现代史纲要</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">十三</span>
+        <span class="entry-name">毛泽东思想和中国特色社会主义理论体系概论</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <div class="subject-entry">
+        <span class="entry-num">十四</span>
+        <span class="entry-name">形势与政策</span>
+        <span class="entry-meta">待导入</span>
+        <span class="entry-stats">
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+          <span class="stat stat-dash">—</span>
+        </span>
+      </div>
+      <!-- 综合练习 (兜底) -->
+      <div class="subject-entry special">
+        <span class="entry-num">附</span>
+        <span class="entry-name">综合练习</span>
+        <span class="entry-meta">共 680 题，含全部示例</span>
+        <span class="entry-stats">
+          <span class="stat stat-red">错 0</span>
+          <span class="stat stat-amber">难 0</span>
+          <span class="stat stat-indigo">复习 —</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Bottom actions -->
+    <div class="home-actions">
+      <span class="action-link">导入 / 管理题库</span>
+      <span class="action-link">练习历史</span>
+      <span class="action-link">错题本</span>
+      <span class="action-link">导出备份</span>
+    </div>
+
+    <div class="home-modify">
+      <button>修改选科</button>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /screen-home -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCREEN 2 · 练习页
+     ════════════════════════════════════════════════════════════════ -->
+<div id="screen-practice" class="screen">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="practice-header">
+      <span class="back-btn">&#8592; 退出（进度已保存）</span>
+      <span class="subject-title">党史</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="practice-tabs">
+      <div class="tabs-left">
+        <button class="tab-btn active">全部</button>
+        <button class="tab-btn">错题</button>
+        <button class="tab-btn">难题</button>
+        <button class="tab-btn">背题</button>
+        <button class="tab-btn">复习</button>
+      </div>
+      <div class="tabs-right">
+        <button class="mode-btn active">顺序 &#x27F3;</button>
+        <button class="mode-btn">随机 &#x21C4;</button>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="practice-progress">
+      <span class="prog-text">已答 1 / 剩余 679</span>
+      <span class="prog-acc">正确率 —</span>
+      <div class="prog-bar-wrap">
+        <div class="prog-bar-fill" style="width:0.147%"></div>
+      </div>
+      <span class="prog-label">1/680</span>
+    </div>
+
+    <!-- Question card (exam paper) -->
+    <div class="question-card">
+      <!-- Exam paper header band -->
+      <div class="q-exam-header">
+        <span class="exam-seal">绝密 &#x2605; 启用前</span>
+        <span class="exam-subject">大学生刷题 · 党史</span>
+      </div>
+
+      <div class="q-card-inner">
+        <!-- Question header -->
+        <div class="q-header">
+          <span class="q-number">一、</span>
+          <span class="q-type">（单选）</span>
+          <span class="q-pos">第 1 / 680 题</span>
+          <span class="q-bookmark" title="标记">&#x2606;</span>
+          <span class="q-prev">上一题</span>
+          <span class="q-score-box">得分 <span class="score-val">—</span></span>
+        </div>
+
+        <!-- Question body -->
+        <div class="q-body">
+          <p>中国共产党一经成立，就把实现（ ）作为党的最高理想和最终目标。</p>
+        </div>
+
+        <!-- Options (答题区) -->
+        <div class="q-options">
+          <div class="option correct">
+            <span class="opt-box">&#x2713;</span>
+            <span class="opt-letter">A.</span>
+            <span class="opt-text">共产主义</span>
+            <span class="opt-mark">&#x2713;</span>
+          </div>
+          <div class="option">
+            <span class="opt-box"></span>
+            <span class="opt-letter">B.</span>
+            <span class="opt-text">社会主义</span>
+          </div>
+          <div class="option">
+            <span class="opt-box"></span>
+            <span class="opt-letter">C.</span>
+            <span class="opt-text">资本主义</span>
+          </div>
+          <div class="option">
+            <span class="opt-box"></span>
+            <span class="opt-letter">D.</span>
+            <span class="opt-text">帝国主义</span>
+          </div>
+        </div>
+
+        <!-- Result area -->
+        <div class="q-result">
+          <div class="result-status"><span class="check">&#x2713;</span> 已提交 · 回答正确</div>
+          <div class="result-ref"><strong>参考答案：</strong>共产主义</div>
+          <div class="result-analysis"><strong>解析：</strong>（本题暂无解析）</div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="q-nav">
+          <button class="nav-btn">下一题</button>
+        </div>
+      </div><!-- /q-card-inner -->
+    </div><!-- /question-card -->
+
+  </div><!-- /container -->
+</div><!-- /screen-practice -->
+
+<script>
+(function(){
+  var btns = document.querySelectorAll('.toggle-btn');
+  btns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btns.forEach(function(b){b.classList.remove('active')});
+      btn.classList.add('active');
+      var targetId = btn.getAttribute('data-target');
+      document.querySelectorAll('.screen').forEach(function(s){
+        s.classList.toggle('active', s.id === targetId);
+      });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

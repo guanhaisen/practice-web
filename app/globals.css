@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
+@theme {
+  /* v2-1 · 冷静效率 palette —— 沉静靛蓝 + 中性近白 */
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef0f3;
+  --color-ink: #1c1d21;
+  --color-muted: #6b7280;
+  --color-faint: #9aa0a8;
+
+  --color-line: #e6e8eb;
+  --color-line-strong: #d6d9de;
+
+  --color-accent: #2f4a7c;
+  --color-accent-hover: #283f6b;
+  --color-accent-soft: #eef2f8;
+  --color-accent-ring: #c9d6ea;
+
+  --color-success: #2d6a3f;
+  --color-success-soft: #e8f1ea;
+  --color-success-ring: #b7d8c0;
+
+  --color-danger: #b4232a;
+  --color-danger-soft: #fbecec;
+  --color-danger-ring: #ecc0c2;
+
+  --color-warn: #9a6b1f;
+  --color-warn-soft: #f6efe2;
+
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui,
+    -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+}
+
+::selection {
+  background: var(--color-accent-ring);
+  color: var(--color-ink);
 }

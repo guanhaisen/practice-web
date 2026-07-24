@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大学生刷题 · 方向三</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@350;400;500;600&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{font-family:'Noto Sans SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif;background:#fcf9f5;color:#1a1a1a;line-height:1.6;min-height:100vh}
+
+/* ===== TOGGLE BAR ===== */
+.toggle-bar{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:10px 48px;background:rgba(252,249,245,0.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #e8e4de;font-size:12.5px;letter-spacing:0.02em;user-select:none}
+.toggle-bar .direction-label{color:#9a9a9a;font-weight:400}
+.toggle-bar .page-toggles{display:flex;align-items:center;gap:2px}
+.toggle-bar .page-toggles .page-btn{background:none;border:none;font-family:inherit;font-size:12.5px;color:#9a9a9a;cursor:pointer;padding:2px 10px;transition:color 0.15s;letter-spacing:0.04em}
+.toggle-bar .page-toggles .page-btn:hover{color:#1a1a1a}
+.toggle-bar .page-toggles .page-btn.active{color:#b22222;font-weight:500}
+.toggle-bar .page-toggles .sep{color:#d0d0d0;font-size:11px}
+
+/* ===== PAGES ===== */
+.page{display:none}
+.page.active{display:block;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== HOME PAGE ===== */
+.home-wrap{max-width:1040px;margin:0 auto;padding:0 48px 80px}
+
+/* Hero */
+.hero{display:flex;gap:28px;padding-top:72px}
+.hero-anchor{width:3px;height:76px;background:#b22222;flex-shrink:0;margin-top:6px;border-radius:1px}
+.hero h1{font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;font-weight:900;font-size:46px;line-height:1.15;color:#1a1a1a;letter-spacing:0.02em}
+.hero-sub{font-size:15.5px;color:#5a5a5a;margin-top:10px;line-height:1.65;max-width:520px;font-weight:350}
+
+/* Subject list */
+.subject-list{margin-top:52px}
+.subject-item{display:flex;align-items:center;padding:13px 0;border-bottom:1px solid #eae6e0;cursor:pointer;transition:opacity 0.15s}
+.subject-item:hover{opacity:0.65}
+.subject-item .name{flex:1;font-size:16.5px;font-weight:450;color:#1a1a1a;letter-spacing:0.01em}
+.subject-item .count{font-size:14px;color:#5a5a5a;margin-right:32px;white-space:nowrap;font-weight:400}
+.subject-item .count:empty{display:none}
+.subject-item .stats{display:flex;gap:18px;font-size:13px;color:#8a8a8a;white-space:nowrap}
+.subject-item .stats span{display:inline-flex;align-items:center;gap:3px}
+.subject-item .stats .num{color:#5a5a5a}
+.subject-item .stats .num.dash{color:#c8c8c8}
+.subject-item.comprehensive{margin-top:6px;padding-top:17px;border-bottom-color:#d0ccc8}
+.subject-item.comprehensive .name{color:#b22222;font-weight:500}
+.subject-item.comprehensive .count{color:#b22222}
+
+/* Footer links */
+.footer-links{display:flex;justify-content:center;gap:28px;margin-top:48px;padding-top:24px;border-top:1px solid #eae6e0;flex-wrap:wrap}
+.footer-links a{font-size:14px;color:#5a5a5a;text-decoration:none;cursor:pointer;transition:color 0.15s;letter-spacing:0.02em;padding:2px 0}
+.footer-links a:hover{color:#b22222}
+.footer-links .dot{color:#d0d0d0;font-size:4px;align-self:center}
+
+/* Modify btn */
+.modify-wrap{text-align:center;margin-top:28px}
+.modify-btn{display:inline-block;padding:8px 28px;font-size:13.5px;color:#b22222;background:none;border:1px solid #b22222;cursor:pointer;transition:all 0.2s;font-family:inherit;letter-spacing:0.06em}
+.modify-btn:hover{background:#b22222;color:#fff}
+
+/* ===== PRACTICE PAGE ===== */
+.practice-wrap{max-width:1040px;margin:0 auto;padding:0 48px 80px}
+
+/* Practice header */
+.practice-header{display:flex;justify-content:space-between;align-items:center;padding-top:28px}
+.practice-header .back{font-size:14.5px;color:#5a5a5a;cursor:pointer;transition:color 0.15s;letter-spacing:0.02em}
+.practice-header .back:hover{color:#b22222}
+.practice-header .subject-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:500;color:#1a1a1a}
+.practice-header .subject-title .seal{width:7px;height:7px;background:#b22222;display:inline-block;flex-shrink:0}
+
+/* Mode tabs */
+.mode-tabs{display:flex;align-items:center;margin-top:22px;border-bottom:1px solid #eae6e0;gap:0}
+.mode-tabs .tab{position:relative;padding:9px 0;margin-right:24px;font-size:14px;color:#5a5a5a;cursor:pointer;background:none;border:none;font-family:inherit;transition:color 0.15s;letter-spacing:0.02em}
+.mode-tabs .tab:hover{color:#1a1a1a}
+.mode-tabs .tab.active{color:#b22222;font-weight:500}
+.mode-tabs .tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#b22222}
+.mode-tabs .order-toggle{margin-left:auto;font-size:13.5px;color:#5a5a5a;display:flex;align-items:center;gap:2px}
+.mode-tabs .order-toggle .opt{cursor:pointer;padding:2px 6px;transition:color 0.15s;color:#5a5a5a}
+.mode-tabs .order-toggle .opt.active{color:#b22222;font-weight:500}
+.mode-tabs .order-toggle .sep{color:#d0d0d0;font-size:10px}
+
+/* Progress area */
+.progress-area{display:flex;align-items:center;gap:20px;margin-top:16px;flex-wrap:wrap}
+.progress-area .text{font-size:14px;color:#5a5a5a}
+.progress-area .bar-wrap{flex:1;min-width:120px;height:3px;background:#e8e4de;position:relative}
+.progress-area .bar-wrap .fill{height:100%;width:0.15%;background:#b22222;transition:width 0.4s}
+.progress-area .bar-wrap .fill.indent{width:6%}
+
+/* Question card */
+.question-card{margin-top:28px}
+.question-meta{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.question-meta .type-tag{font-size:12px;color:#5a5a5a;border:1px solid #d4d0cc;padding:1px 9px;letter-spacing:0.04em;font-weight:400}
+.question-meta .num{font-size:14px;color:#5a5a5a}
+.question-meta .bookmark{font-size:17px;color:#c8c4c0;cursor:pointer;line-height:1;transition:color 0.15s;margin-left:4px}
+.question-meta .bookmark:hover{color:#b22222}
+.question-meta .prev{margin-left:auto;font-size:14px;color:#5a5a5a;cursor:pointer;transition:color 0.15s}
+.question-meta .prev:hover{color:#b22222}
+
+/* Stem */
+.question-stem{font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;font-size:18px;line-height:1.85;color:#1a1a1a;margin-bottom:26px;text-wrap:pretty;letter-spacing:0.01em}
+
+/* Options */
+.options{display:flex;flex-direction:column;gap:0}
+.option{display:flex;align-items:center;gap:10px;border:1px solid #e8e4de;padding:13px 16px;font-size:16px;color:#1a1a1a;cursor:pointer;transition:all 0.12s;margin-bottom:-1px}
+.option:first-child{border-top-left-radius:2px;border-top-right-radius:2px}
+.option:last-child{border-bottom-left-radius:2px;border-bottom-right-radius:2px;margin-bottom:0}
+.option:hover{background:#f5f2ed}
+.option .radio{width:15px;height:15px;border:1.5px solid #c8c4c0;border-radius:50%;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s}
+.option .radio-inner{width:7px;height:7px;border-radius:50%;background:transparent;transition:all 0.15s}
+.option.correct{border-color:#b22222;background:#fdf8f5;position:relative}
+.option.correct+.option{border-top-color:#b22222}
+.option.correct .radio{border-color:#b22222}
+.option.correct .radio .radio-inner{background:#b22222}
+.option .opt-label{color:#5a5a5a;font-size:14px;width:1.2em;flex-shrink:0}
+.option .opt-text{flex:1}
+
+/* Result area */
+.result-area{margin-top:16px;padding:16px 0 0}
+.result-status{display:flex;align-items:center;gap:6px;font-size:14.5px;color:#2d6a4f;margin-bottom:10px}
+.result-status .check{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#2d6a4f;color:#fff;font-size:10px;flex-shrink:0}
+.ref-answer{font-size:15px;color:#1a1a1a;margin-bottom:6px}
+.ref-answer .ans{color:#b22222;font-weight:500}
+.explanation{font-size:14px;color:#8a8a8a;font-style:italic;margin-top:2px;padding:4px 0}
+
+/* Next btn */
+.next-wrap{margin-top:22px}
+.next-btn{display:inline-block;padding:9px 30px;font-size:14.5px;color:#fff;background:#b22222;border:none;cursor:pointer;transition:background 0.15s;font-family:inherit;letter-spacing:0.04em}
+.next-btn:hover{background:#8b1a1a}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:720px){
+  .home-wrap,.practice-wrap{padding-left:24px;padding-right:24px}
+  .toggle-bar{padding:10px 24px}
+  .hero{padding-top:48px;gap:20px}
+  .hero h1{font-size:34px}
+  .hero-anchor{height:56px}
+  .subject-item{flex-wrap:wrap;gap:4px}
+  .subject-item .stats{margin-left:auto;width:100%;margin-top:4px}
+  .practice-header{flex-direction:column;align-items:flex-start;gap:8px}
+  .mode-tabs{overflow-x:auto}
+  .question-stem{font-size:17px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOGGLE BAR ===== -->
+<div class="toggle-bar">
+  <span class="direction-label">方向三 · 克制留白 / 安静学术</span>
+  <div class="page-toggles">
+    <button class="page-btn active" data-page="home">首页</button>
+    <span class="sep">/</span>
+    <button class="page-btn" data-page="practice">练习页</button>
+  </div>
+</div>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+<div class="home-wrap">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-anchor"></div>
+    <div>
+      <h1>大学生刷题</h1>
+      <p class="hero-sub">已选科目,点击开始练习;进度按科目自动保存在本地。</p>
+    </div>
+  </div>
+
+  <!-- Subject list -->
+  <div class="subject-list" id="subjectList"></div>
+
+  <!-- Footer links -->
+  <div class="footer-links">
+    <a>导入题库</a>
+    <span class="dot">&#x2B24;</span>
+    <a>管理题库</a>
+    <span class="dot">&#x2B24;</span>
+    <a>练习历史</a>
+    <span class="dot">&#x2B24;</span>
+    <a>错题本</a>
+    <span class="dot">&#x2B24;</span>
+    <a>导出备份</a>
+  </div>
+
+  <div class="modify-wrap">
+    <button class="modify-btn">修改选科</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ===== PRACTICE PAGE ===== -->
+<div class="page" id="page-practice">
+<div class="practice-wrap">
+
+  <!-- Practice header -->
+  <div class="practice-header">
+    <span class="back">&larr;&nbsp; 退出(进度已保存)</span>
+    <div class="subject-title">
+      <span class="seal"></span>
+      党史
+    </div>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <button class="tab active">全部</button>
+    <button class="tab">错题</button>
+    <button class="tab">难题</button>
+    <button class="tab">背题</button>
+    <button class="tab">复习</button>
+    <div class="order-toggle">
+      <span class="opt active">顺序</span>
+      <span class="sep">/</span>
+      <span class="opt">随机</span>
+    </div>
+  </div>
+
+  <!-- Progress area -->
+  <div class="progress-area">
+    <span class="text">已答 1 / 剩余 679</span>
+    <span class="text">正确率 &mdash;</span>
+    <div class="bar-wrap">
+      <div class="fill indent"></div>
+    </div>
+  </div>
+
+  <!-- Question card -->
+  <div class="question-card">
+
+    <!-- Meta -->
+    <div class="question-meta">
+      <span class="type-tag">单选</span>
+      <span class="num">第 1 / 680 题</span>
+      <span class="bookmark">&#9734;</span>
+      <span class="prev">上一题</span>
+    </div>
+
+    <!-- Stem -->
+    <div class="question-stem">
+      中国共产党一经成立,就把实现( &nbsp; )作为党的最高理想和最终目标。
+    </div>
+
+    <!-- Options -->
+    <div class="options">
+      <div class="option correct">
+        <span class="radio"><span class="radio-inner"></span></span>
+        <span class="opt-label">A</span>
+        <span class="opt-text">共产主义</span>
+      </div>
+      <div class="option">
+        <span class="radio"><span class="radio-inner"></span></span>
+        <span class="opt-label">B</span>
+        <span class="opt-text">社会主义</span>
+      </div>
+      <div class="option">
+        <span class="radio"><span class="radio-inner"></span></span>
+        <span class="opt-label">C</span>
+        <span class="opt-text">资本主义</span>
+      </div>
+      <div class="option">
+        <span class="radio"><span class="radio-inner"></span></span>
+        <span class="opt-label">D</span>
+        <span class="opt-text">帝国主义</span>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-area">
+      <div class="result-status">
+        <span class="check">&#x2713;</span>
+        已提交 &middot; 回答正确
+      </div>
+      <div class="ref-answer">参考答案: <span class="ans">共产主义</span></div>
+      <div class="explanation">(本题暂无解析)</div>
+    </div>
+
+    <!-- Next -->
+    <div class="next-wrap">
+      <button class="next-btn">下一题</button>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<script>
+// ===== Subject data =====
+const subjects = [
+  { name: '高等数学(上)', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '高等数学(下)', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '大学英语 I',   count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '大学英语 II',  count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '大学英语 III', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '党史',         count: '共 680 题', wrong: 0, hard: 0, review: 0 },
+  { name: '马克思主义原理',  count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '大学物理',     count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '线性代数',     count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '概率数理统计', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '思想道德与法治', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '中国近现代史纲要', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '毛泽东思想和中国特色社会主义理论体系概论', count: '待导入', wrong: '—', hard: '—', review: '—' },
+  { name: '形势与政策',   count: '待导入', wrong: '—', hard: '—', review: '—' }
+];
+
+// ===== Render subject list =====
+function renderSubjects() {
+  var container = document.getElementById('subjectList');
+  var html = '';
+  for (var i = 0; i < subjects.length; i++) {
+    var s = subjects[i];
+    var wrongCls = (typeof s.wrong === 'number') ? 'num' : 'num dash';
+    var hardCls  = (typeof s.hard  === 'number') ? 'num' : 'num dash';
+    var revCls   = (typeof s.review === 'number') ? 'num' : 'num dash';
+    html += '<div class="subject-item">'
+      + '<span class="name">' + s.name + '</span>'
+      + '<span class="count">' + s.count + '</span>'
+      + '<span class="stats">'
+      + '<span>错题 <span class="' + wrongCls + '">' + s.wrong + '</span></span>'
+      + '<span>难题 <span class="' + hardCls + '">' + s.hard + '</span></span>'
+      + '<span>待复习 <span class="' + revCls + '">' + s.review + '</span></span>'
+      + '</span>'
+      + '</div>';
+  }
+  // Comprehensive entry
+  html += '<div class="subject-item comprehensive">'
+    + '<span class="name">综合练习(680 题,含全部示例)</span>'
+    + '<span class="count"></span>'
+    + '<span class="stats"><span>&nbsp;</span></span>'
+    + '</div>';
+  container.innerHTML = html;
+}
+renderSubjects();
+
+// ===== Page toggle =====
+var pageBtns = document.querySelectorAll('.page-btn');
+var pages = {
+  home: document.getElementById('page-home'),
+  practice: document.getElementById('page-practice')
+};
+
+pageBtns.forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    pageBtns.forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    var target = btn.getAttribute('data-page');
+    for (var key in pages) {
+      pages[key].classList.toggle('active', key === target);
+    }
+  });
+});
+
+// ===== Mode tabs (practice) =====
+var tabs = document.querySelectorAll('.mode-tabs .tab');
+tabs.forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+  });
+});
+
+// ===== Order toggle =====
+var orderOpts = document.querySelectorAll('.order-toggle .opt');
+orderOpts.forEach(function(opt) {
+  opt.addEventListener('click', function() {
+    orderOpts.forEach(function(o) { o.classList.remove('active'); });
+    opt.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>

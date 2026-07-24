@@ -15,28 +15,37 @@ export default function Summary({ progress, total, subject, onRestart }: Props) 
   const accuracy = graded.length ? Math.round((correctCount / graded.length) * 100) : 0
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <h2 className="mb-4 text-xl font-semibold">本次刷题完成 🎉</h2>
-      <ul className="mb-5 space-y-2 text-sm">
-        <li>总题数：{total}</li>
-        <li>已作答：{Object.keys(progress.answers).length}</li>
+    <div className="rounded-2xl border border-line bg-surface p-6">
+      <h2 className="mb-4 text-xl font-semibold text-ink">本次刷题完成</h2>
+      <ul className="mb-5 space-y-2 text-sm text-muted">
         <li>
-          自动判分题正确率：{accuracy}%（{correctCount}/{graded.length}）
+          总题数：<span className="text-ink">{total}</span>
         </li>
-        <li>错题数：{progress.wrongIds.length}</li>
+        <li>
+          已作答：<span className="text-ink">{Object.keys(progress.answers).length}</span>
+        </li>
+        <li>
+          自动判分题正确率：
+          <span className="text-ink">
+            {accuracy}%（{correctCount}/{graded.length}）
+          </span>
+        </li>
+        <li>
+          错题数：<span className="text-ink">{progress.wrongIds.length}</span>
+        </li>
       </ul>
       <div className="flex gap-3">
         <button
           type="button"
           onClick={onRestart}
-          className="rounded-xl bg-blue-600 px-5 py-2.5 font-medium text-white"
+          className="rounded-xl bg-accent px-5 py-2.5 font-medium text-white transition-colors hover:bg-accent-hover"
         >
           重新开始
         </button>
         {subject && (
           <Link
             href={`/practice?subject=${subject}&mode=wrong`}
-            className="rounded-xl border border-zinc-300 px-5 py-2.5 font-medium text-blue-600 dark:border-zinc-700"
+            className="rounded-xl border border-line-strong px-5 py-2.5 font-medium text-accent transition-colors hover:border-accent"
           >
             查看错题
           </Link>

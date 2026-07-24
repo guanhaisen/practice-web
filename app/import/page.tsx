@@ -130,11 +130,11 @@ export default function ImportPage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-16">
-      <Link href="/" className="text-sm text-blue-600">
+      <Link href="/" className="text-sm text-accent">
         ← 返回首页
       </Link>
-      <h1 className="mb-2 mt-2 text-3xl font-bold tracking-tight">导入题库</h1>
-      <p className="mb-6 text-zinc-500">
+      <h1 className="mb-2 mt-2 text-3xl font-bold tracking-tight text-ink">导入题库</h1>
+      <p className="mb-6 text-muted">
         粘贴或上传题目 JSON，校验通过后保存到本地；之后刷题将使用导入的题库，覆盖内置示例。
       </p>
 
@@ -146,7 +146,7 @@ export default function ImportPage() {
           setSaved(false)
         }}
         placeholder="在此粘贴题目 JSON 数组…"
-        className="h-48 w-full rounded-xl border border-zinc-300 p-3 font-mono text-sm outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-800"
+        className="h-48 w-full rounded-xl border border-line p-3 font-mono text-sm outline-none focus:border-accent bg-surface"
       />
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <input
@@ -158,15 +158,15 @@ export default function ImportPage() {
         <button
           type="button"
           onClick={validate}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+          className="rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
         >
           校验
         </button>
       </div>
 
-      <details className="mt-4 text-sm text-zinc-500">
+      <details className="mt-4 text-sm text-muted">
         <summary className="cursor-pointer">查看 JSON 格式说明</summary>
-        <pre className="mt-2 overflow-x-auto rounded-lg bg-zinc-100 p-3 text-xs dark:bg-zinc-800">
+        <pre className="mt-2 overflow-x-auto rounded-lg bg-surface-2 p-3 text-xs">
           {FORMAT_HINT}
         </pre>
         <p className="mt-2">
@@ -174,18 +174,18 @@ export default function ImportPage() {
         </p>
       </details>
 
-      <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <div className="mt-6 border-t border-line pt-6">
         <h2 className="mb-2 text-lg font-semibold">或用 CSV 批量导入</h2>
-        <p className="mb-3 text-sm text-zinc-500">
+        <p className="mb-3 text-sm text-muted">
           列顺序：id, type, subject, stem, options, answer, explanation。多选/填空的
           options 与 answer 用
-          <code className="mx-1 rounded bg-zinc-100 px-1 dark:bg-zinc-800">|</code>
+          <code className="mx-1 rounded bg-surface-2 px-1">|</code>
           分隔；首行可为表头。
         </p>
         <button
           type="button"
           onClick={downloadTemplate}
-          className="mb-3 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 dark:border-zinc-700"
+          className="mb-3 rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink"
         >
           下载 CSV 模板
         </button>
@@ -197,19 +197,19 @@ export default function ImportPage() {
             setSaved(false)
           }}
           placeholder="在此粘贴 CSV 文本…"
-          className="h-40 w-full rounded-xl border border-zinc-300 p-3 font-mono text-sm outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-800"
+          className="h-40 w-full rounded-xl border border-line p-3 font-mono text-sm outline-none focus:border-accent bg-surface"
         />
         <button
           type="button"
           onClick={parseCsvBtn}
-          className="mt-3 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+          className="mt-3 rounded-xl bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
         >
           解析 CSV
         </button>
       </div>
 
       {result && !result.ok && (
-        <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950">
+        <div className="mt-4 rounded-xl border border-danger bg-danger-soft p-4 text-sm text-danger">
           <p className="mb-1 font-medium">校验未通过：</p>
           <ul className="list-disc pl-5">
             {result.errors.map((e, i) => (
@@ -220,12 +220,12 @@ export default function ImportPage() {
       )}
 
       {result?.ok && (
-        <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-4 text-sm dark:bg-green-950">
-          <p className="mb-2 font-medium text-green-700">
+        <div className="mt-4 rounded-xl border border-success bg-success-soft p-4 text-sm">
+          <p className="mb-2 font-medium text-success">
             校验通过，共 {result.questions.length} 题
           </p>
           {dist && (
-            <ul className="space-y-1 text-xs text-zinc-600">
+            <ul className="space-y-1 text-xs text-muted">
               {Object.entries(dist).map(([sid, n]) => (
                 <li key={sid}>
                   {subjectName(sid)}：{n} 题
@@ -233,17 +233,17 @@ export default function ImportPage() {
               ))}
             </ul>
           )}
-          <p className="mt-2 text-xs text-zinc-600">
+          <p className="mt-2 text-xs text-muted">
             将按科目覆盖以上 {newSubjectIds.length} 个科目；其余科目（
             {keptSubjects.map((s) => s.name).join('、') || '无'}）保留当前内容。
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
+          <p className="mt-1 text-xs text-muted">
             ⚠ 导入会整科替换，并清理这些科目中已不存在题目的进度与星标。
           </p>
           <button
             type="button"
             onClick={save}
-            className="mt-3 rounded-xl bg-blue-600 px-4 py-2 font-medium text-white"
+            className="mt-3 rounded-xl bg-accent px-4 py-2 font-medium text-white transition-colors hover:bg-accent-hover"
           >
             保存到本地
           </button>
@@ -251,13 +251,13 @@ export default function ImportPage() {
       )}
 
       {saved && (
-        <p className="mt-3 text-sm text-green-600">已保存，可返回首页开始练习。</p>
+        <p className="mt-3 text-sm text-success">已保存，可返回首页开始练习。</p>
       )}
 
       <div className="mt-6 flex gap-3">
         <Link
           href="/"
-          className="rounded-xl border border-zinc-300 px-5 py-2.5 font-medium text-blue-600 dark:border-zinc-700"
+          className="rounded-xl border border-line-strong px-5 py-2.5 font-medium text-accent transition-colors hover:border-accent"
         >
           开始练习
         </Link>
@@ -265,15 +265,15 @@ export default function ImportPage() {
           <button
             type="button"
             onClick={clear}
-            className="rounded-xl border border-red-300 px-5 py-2.5 font-medium text-red-600 dark:border-red-700"
+            className="rounded-xl border border-danger px-5 py-2.5 font-medium text-danger transition-colors hover:border-danger"
           >
             清除导入（恢复示例）
           </button>
         )}
       </div>
 
-      <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-800">
-        <p className="mb-2 text-sm text-zinc-500">
+      <div className="mt-6 border-t border-line pt-6">
+        <p className="mb-2 text-sm text-muted">
           从备份文件恢复（覆盖题库 / 进度 / 选科 / 星标）：
         </p>
         <input
@@ -283,7 +283,7 @@ export default function ImportPage() {
           className="text-sm"
         />
         {restored && (
-          <p className="mt-2 text-sm text-green-600">
+          <p className="mt-2 text-sm text-success">
             已从备份恢复，建议刷新页面查看。
           </p>
         )}

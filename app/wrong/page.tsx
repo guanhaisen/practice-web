@@ -72,23 +72,23 @@ function WrongInner() {
   if (!subject) {
     return (
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
-        <Link href="/" className="text-sm text-blue-600">
+        <Link href="/" className="text-sm text-accent">
           ← 返回首页
         </Link>
-        <h1 className="mb-1 mt-2 text-3xl font-bold tracking-tight">错题本</h1>
-        <p className="mb-6 text-zinc-500">选择一个科目查看并管理错题。</p>
+        <h1 className="mb-1 mt-2 text-3xl font-bold tracking-tight text-ink">错题本</h1>
+        <p className="mb-6 text-muted">选择一个科目查看并管理错题。</p>
         {overview.length === 0 ? (
-          <p className="text-sm text-zinc-500">暂无错题，继续保持～</p>
+          <p className="text-sm text-muted">暂无错题，继续保持～</p>
         ) : (
           <ul className="space-y-3">
             {overview.map((o) => (
               <li key={o.id}>
                 <Link
                   href={`/wrong?subject=${encodeURIComponent(o.id)}`}
-                  className="flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3 font-medium text-blue-600 dark:border-zinc-800"
+                  className="flex items-center justify-between rounded-xl border border-line px-4 py-3 font-medium text-accent"
                 >
                   <span>{subjectName(o.id)}</span>
-                  <span className="text-sm text-zinc-500">{o.count} 题</span>
+                  <span className="text-sm text-muted">{o.count} 题</span>
                 </Link>
               </li>
             ))}
@@ -102,27 +102,27 @@ function WrongInner() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
-      <Link href="/" className="text-sm text-blue-600">
+      <Link href="/" className="text-sm text-accent">
         ← 返回首页
       </Link>
-      <h1 className="mb-1 mt-2 text-3xl font-bold tracking-tight">
+      <h1 className="mb-1 mt-2 text-3xl font-bold tracking-tight text-ink">
         错题本{subject && ` · ${subjectName(subject)}`}
       </h1>
-      <p className="mb-6 text-zinc-500">
+      <p className="mb-6 text-muted">
         共 {wrongQs.length} 道错题。可移除已掌握的题，或重新练习本科技错题。
       </p>
 
       {subject && wrongQs.length > 0 && (
         <Link
           href={`/practice?subject=${encodeURIComponent(subject)}&mode=wrong`}
-          className="mb-6 inline-block rounded-xl bg-blue-600 px-5 py-2.5 font-medium text-white"
+          className="mb-6 inline-block rounded-xl bg-accent px-5 py-2.5 font-medium text-white transition-colors hover:bg-accent-hover"
         >
           重练本科技错题
         </Link>
       )}
 
       {wrongQs.length === 0 ? (
-        <p className="text-sm text-zinc-500">暂无错题，继续保持～</p>
+        <p className="text-sm text-muted">暂无错题，继续保持～</p>
       ) : (
         <ul className="space-y-4">
           {wrongQs.map((q) => {
@@ -131,27 +131,27 @@ function WrongInner() {
             return (
               <li
                 key={q.id}
-                className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+                className="rounded-xl border border-line p-4"
               >
                 <p className="mb-2 font-medium">{q.stem.slice(0, 120)}</p>
                 <div className="space-y-1 text-sm">
                   <p>
                     你的答案：
-                    <span className={correct ? 'text-green-600' : 'text-red-600'}>
+                    <span className={correct ? 'text-success' : 'text-danger'}>
                       {fmt(ans?.value)}
                     </span>
                     {ans ? (correct ? ' ✓' : ' ✗') : ''}
                   </p>
                   <p>正确答案：{fmt(q.answer)}</p>
                   {q.explanation && (
-                    <p className="text-zinc-500">解析：{q.explanation}</p>
+                    <p className="text-muted">解析：{q.explanation}</p>
                   )}
                 </div>
                 <div className="mt-3 flex gap-3">
                   <button
                     type="button"
                     onClick={() => removeWrong(q.id)}
-                    className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 dark:border-zinc-700"
+                    className="rounded-lg border border-line-strong px-3 py-1.5 text-sm text-ink"
                   >
                     移除
                   </button>
@@ -159,7 +159,7 @@ function WrongInner() {
                     href={`/practice?subject=${encodeURIComponent(
                       subject,
                     )}&mode=wrong&q=${encodeURIComponent(q.id)}`}
-                    className="rounded-lg border border-blue-300 px-3 py-1.5 text-sm text-blue-600 dark:border-blue-700"
+                    className="rounded-lg border border-accent px-3 py-1.5 text-sm text-accent"
                   >
                     重练
                   </Link>

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大学生刷题 — 方向一 · 编辑学术</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  background:#f8f8f4;
+  color:#1a1a1a;
+  line-height:1.7;
+  font-size:15px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+
+/* =============================================
+   SCREEN SWITCHER
+   ============================================= */
+.switcher{
+  position:sticky;top:0;z-index:100;
+  background:#f8f8f4;
+  border-bottom:1px solid #d4d4cf;
+  padding:0 32px;
+}
+.switcher-inner{
+  max-width:1040px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:44px;
+}
+.switcher-group{display:flex;gap:0}
+.switch-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:13px;font-weight:500;color:#6b6b66;
+  padding:0 16px;height:44px;line-height:44px;
+  letter-spacing:0.03em;
+  transition:color 0.15s;
+  position:relative;
+}
+.switch-btn:hover{color:#1a1a1a}
+.switch-btn.active{color:#9a1f1a}
+.switch-btn.active::after{
+  content:'';position:absolute;bottom:0;left:16px;right:16px;
+  height:2px;background:#9a1f1a;
+}
+.switcher-label{
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:11px;color:#9a1f1a;letter-spacing:0.08em;
+  text-transform:uppercase;
+  opacity:0.7;
+}
+
+/* =============================================
+   SCREENS
+   ============================================= */
+.screen{display:none}
+.screen.active{display:block}
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+.container{max-width:1040px;margin:0 auto;padding:48px 32px 64px}
+
+/* =============================================
+   HOME — MASTHEAD
+   ============================================= */
+.masthead{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.masthead-mark{
+  display:inline-block;width:14px;height:14px;
+  background:#9a1f1a;flex-shrink:0;
+  position:relative;top:2px;
+}
+.masthead-title{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-size:32px;font-weight:900;
+  letter-spacing:0.06em;line-height:1.2;
+  color:#1a1a1a;
+}
+.masthead-rule{
+  width:48px;height:2px;background:#9a1f1a;
+  margin:12px 0 16px;
+}
+.masthead-sub{
+  font-size:14px;color:#6b6b66;
+  max-width:520px;
+  text-wrap:pretty;
+}
+
+/* =============================================
+   HOME — SECTION DIVIDER
+   ============================================= */
+.section-label{
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:11px;font-weight:600;color:#9a1f1a;
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin:40px 0 16px;
+}
+
+/* =============================================
+   HOME — SUBJECT GRID
+   ============================================= */
+.subject-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-right:1px solid #d4d4cf;
+  border-bottom:1px solid #d4d4cf;
+}
+.subject-cell{
+  border-top:1px solid #d4d4cf;
+  border-left:1px solid #d4d4cf;
+  padding:20px 20px 16px;
+  display:flex;flex-direction:column;
+  min-height:148px;
+}
+.subject-cell.filler{visibility:hidden;pointer-events:none}
+.subject-cell-name{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-size:17px;font-weight:700;line-height:1.3;
+  margin-bottom:8px;color:#1a1a1a;
+}
+.subject-cell-rule{height:1px;background:#e5e5e0;margin-bottom:10px;width:100%}
+.subject-cell-count{
+  font-size:13px;color:#6b6b66;margin-bottom:8px;
+}
+.subject-cell-count strong{font-weight:600;color:#1a1a1a}
+.subject-cell-import{font-size:13px;color:#9a9a94;font-style:italic}
+.subject-cell-stats{
+  display:flex;flex-wrap:wrap;gap:6px 14px;
+  font-size:12px;color:#6b6b66;margin-top:auto;
+}
+.stat-item{display:inline-flex;align-items:center;gap:3px}
+.stat-item .num{font-weight:600;font-size:12px}
+.stat-wrong .num{color:#9a1f1a}
+.stat-hard .num{color:#8b6f1a}
+.stat-review .num{color:#3a4a6b}
+.stat-na{color:#b8b8b2}
+.subject-cell-reset{
+  font-size:11px;color:#9a9a94;margin-top:8px;
+  cursor:pointer;text-decoration:none;display:inline-block;
+  border-bottom:1px solid transparent;transition:border-color 0.15s;
+  align-self:flex-start;
+}
+.subject-cell-reset:hover{border-color:#9a9a94;color:#6b6b66}
+
+/* =============================================
+   HOME — COMPREHENSIVE CARD
+   ============================================= */
+.comprehensive{
+  border:1px solid #d4d4cf;border-top:none;
+  padding:18px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:background 0.15s;
+}
+.comprehensive:hover{background:#f3f3ee}
+.comprehensive-title{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-size:16px;font-weight:700;color:#1a1a1a;
+}
+.comprehensive-desc{font-size:13px;color:#6b6b66}
+.comprehensive-arrow{
+  font-size:14px;color:#9a1f1a;
+  font-family:'Noto Sans SC',sans-serif;
+}
+
+/* =============================================
+   HOME — UTILITY ROW
+   ============================================= */
+.utility-row{
+  display:flex;flex-wrap:wrap;gap:4px 32px;
+  border-top:1px solid #d4d4cf;
+  border-bottom:1px solid #d4d4cf;
+  padding:16px 24px;margin-top:0;
+}
+.utility-link{
+  font-size:13px;color:#6b6b66;text-decoration:none;
+  cursor:pointer;transition:color 0.15s;
+  border-bottom:1px solid transparent;
+}
+.utility-link:hover{color:#1a1a1a;border-color:#9a1f1a}
+.utility-link .sym{color:#9a1f1a;margin-right:4px}
+
+/* =============================================
+   HOME — MODIFY BUTTON
+   ============================================= */
+.modify-row{
+  margin-top:0;padding:20px 0 0;
+  display:flex;justify-content:center;
+}
+.modify-btn{
+  background:none;border:1px solid #d4d4cf;
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:13px;font-weight:500;color:#9a1f1a;
+  padding:8px 28px;cursor:pointer;
+  letter-spacing:0.04em;
+  transition:border-color 0.15s,background 0.15s;
+}
+.modify-btn:hover{border-color:#9a1f1a;background:#f3f3ee}
+
+/* =============================================
+   PRACTICE — TOP BAR
+   ============================================= */
+.practice-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 0 14px;border-bottom:1px solid #d4d4cf;
+  margin-bottom:16px;
+}
+.practice-back{
+  font-size:14px;color:#6b6b66;text-decoration:none;
+  cursor:pointer;transition:color 0.15s;
+}
+.practice-back:hover{color:#1a1a1a}
+.practice-subject{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-size:20px;font-weight:700;color:#1a1a1a;
+  letter-spacing:0.03em;
+}
+
+/* =============================================
+   PRACTICE — MODE TABS
+   ============================================= */
+.practice-tabs{
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #e5e5e0;margin-bottom:16px;
+}
+.tab-group{display:flex;gap:0}
+.tab-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:13px;font-weight:500;color:#6b6b66;
+  padding:0 14px;height:36px;line-height:36px;
+  position:relative;transition:color 0.15s;
+}
+.tab-btn:hover{color:#1a1a1a}
+.tab-btn.active{color:#9a1f1a}
+.tab-btn.active::after{
+  content:'';position:absolute;bottom:0;left:14px;right:14px;
+  height:2px;background:#9a1f1a;
+}
+.tab-shuffle{
+  font-size:13px;color:#6b6b66;display:flex;gap:10px;
+}
+.tab-shuffle button{
+  background:none;border:none;cursor:pointer;
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:13px;color:#6b6b66;padding:0 2px;
+  transition:color 0.15s;
+}
+.tab-shuffle button:hover{color:#1a1a1a}
+.tab-shuffle button.active{color:#9a1f1a;font-weight:600}
+
+/* =============================================
+   PRACTICE — PROGRESS
+   ============================================= */
+.progress-area{
+  margin-bottom:20px;
+}
+.progress-stats{
+  display:flex;align-items:center;gap:20px;
+  font-size:13px;color:#6b6b66;margin-bottom:8px;
+}
+.progress-stats strong{font-weight:600;color:#1a1a1a}
+.progress-bar{
+  height:3px;background:#e5e5e0;width:100%;
+  position:relative;
+}
+.progress-fill{
+  height:100%;background:#9a1f1a;
+  width:0.15%; /* 1/680 ≈ 0.15% */
+  transition:width 0.3s;
+}
+
+/* =============================================
+   PRACTICE — QUESTION HEADER
+   ============================================= */
+.question-header{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:16px;padding-bottom:12px;
+  border-bottom:1px solid #e5e5e0;
+}
+.q-type{
+  font-size:11px;font-weight:600;color:#9a1f1a;
+  letter-spacing:0.06em;
+  border:1px solid #9a1f1a;padding:1px 8px 0;
+  line-height:20px;
+}
+.q-number{
+  font-size:12px;color:#6b6b66;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.q-mark{
+  background:none;border:none;cursor:pointer;
+  font-size:16px;color:#9a9a94;line-height:1;
+  padding:0 2px;transition:color 0.15s;
+}
+.q-mark:hover,.q-mark.active{color:#9a1f1a}
+.q-prev{
+  margin-left:auto;
+  font-size:12px;color:#6b6b66;text-decoration:none;
+  cursor:pointer;transition:color 0.15s;
+  border-bottom:1px solid transparent;
+}
+.q-prev:hover{color:#1a1a1a;border-color:#9a1f1a}
+
+/* =============================================
+   PRACTICE — QUESTION STEM
+   ============================================= */
+.question-stem{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-size:18px;font-weight:600;line-height:1.8;
+  color:#1a1a1a;margin-bottom:24px;
+  text-wrap:pretty;
+}
+
+/* =============================================
+   PRACTICE — OPTIONS
+   ============================================= */
+.option-list{margin-bottom:20px;border-top:1px solid #e5e5e0}
+.option-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:12px 16px;
+  border-bottom:1px solid #e5e5e0;
+  transition:background 0.15s;
+  cursor:pointer;
+}
+.option-item:hover{background:#f3f3ee}
+.option-item.correct{
+  background:#f4f9f4;
+  border-left:3px solid #2d6a3f;
+  padding-left:13px;
+}
+.option-letter{
+  font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;
+  font-size:14px;font-weight:700;color:#6b6b66;
+  min-width:18px;text-align:right;
+  line-height:1.7;
+}
+.option-item.correct .option-letter{color:#2d6a3f}
+.option-text{
+  font-size:15px;color:#1a1a1a;line-height:1.7;
+}
+.option-item.correct .option-text{color:#2d6a3f;font-weight:500}
+
+/* =============================================
+   PRACTICE — RESULT
+   ============================================= */
+.result-area{
+  border-top:1px solid #d4d4cf;padding:16px 0 20px;
+  margin-bottom:20px;
+}
+.result-verdict{
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:600;color:#2d6a3f;
+  margin-bottom:12px;
+}
+.result-verdict .mark{font-size:16px;font-weight:700}
+.result-ref{
+  font-size:14px;color:#1a1a1a;margin-bottom:8px;
+}
+.result-ref strong{font-weight:600;color:#9a1f1a}
+.result-analysis{
+  font-size:14px;color:#6b6b66;
+  padding:12px 0;border-top:1px solid #e5e5e0;
+  margin-top:10px;
+}
+.result-analysis .label{font-weight:600;color:#1a1a1a;margin-bottom:2px}
+.result-analysis .empty{color:#9a9a94;font-style:italic}
+
+/* =============================================
+   PRACTICE — NEXT BUTTON
+   ============================================= */
+.next-row{display:flex;justify-content:flex-end;padding-top:4px}
+.next-btn{
+  background:none;border:1px solid #9a1f1a;
+  font-family:'Noto Sans SC','Source Han Sans SC',sans-serif;
+  font-size:14px;font-weight:500;color:#9a1f1a;
+  padding:8px 28px;cursor:pointer;
+  letter-spacing:0.04em;transition:all 0.15s;
+}
+.next-btn:hover{background:#9a1f1a;color:#fff}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media(max-width:768px){
+  .container{padding:32px 20px 48px}
+  .switcher{padding:0 20px}
+  .subject-grid{grid-template-columns:repeat(2,1fr)}
+  .masthead-title{font-size:26px}
+  .practice-subject{font-size:17px}
+  .question-stem{font-size:16px}
+}
+@media(max-width:480px){
+  .subject-grid{grid-template-columns:1fr}
+  .switcher-inner{flex-wrap:wrap;height:auto;padding:6px 0}
+  .switch-btn{height:32px;line-height:32px;font-size:12px;padding:0 10px}
+  .switch-btn.active::after{left:10px;right:10px}
+  .utility-row{gap:2px 16px;padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- =============================================
+     SCREEN SWITCHER
+     ============================================= -->
+<div class="switcher">
+  <div class="switcher-inner">
+    <div class="switcher-group">
+      <button class="switch-btn active" onclick="showScreen('screen-home')">首页</button>
+      <button class="switch-btn" onclick="showScreen('screen-practice')">练习页</button>
+    </div>
+    <span class="switcher-label">方向一 · 编辑学术 / Swiss-serif 期刊感</span>
+  </div>
+</div>
+
+<!-- =============================================
+     SCREEN: HOME
+     ============================================= -->
+<div id="screen-home" class="screen active">
+  <div class="container">
+
+    <!-- MASTHEAD -->
+    <div class="masthead">
+      <span class="masthead-mark"></span>
+      <h1 class="masthead-title">大学生刷题</h1>
+    </div>
+    <div class="masthead-rule"></div>
+    <p class="masthead-sub">已选科目，点击开始练习；进度按科目自动保存在本地。</p>
+
+    <!-- SUBJECT GRID -->
+    <div class="section-label">已选科目</div>
+    <div class="subject-grid">
+
+      <!-- 1. 党史 (only subject with questions) -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">党史</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-count"><strong>680</strong> 题 · 已做 <strong>0</strong>/680</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-wrong">错题 <span class="num">0</span></span>
+          <span class="stat-item stat-hard">难题 <span class="num">0</span></span>
+          <span class="stat-item stat-review">待复习 <span class="num">0</span></span>
+        </div>
+        <a class="subject-cell-reset">重置</a>
+      </div>
+
+      <!-- 2. 高等数学(上) -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">高等数学（上）</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 3. 大学英语 I -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">大学英语 I</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 4. 高等数学(下) -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">高等数学（下）</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 5. 大学英语 II -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">大学英语 II</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 6. 大学英语 III -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">大学英语 III</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 7. 马克思主义原理 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">马克思主义原理</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 8. 大学物理 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">大学物理</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 9. 线性代数 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">线性代数</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 10. 概率数理统计 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">概率数理统计</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 11. 思想道德与法治 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">思想道德与法治</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 12. 中国近现代史纲要 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">中国近现代史纲要</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 13. 毛泽东思想和中国特色社会主义理论体系概论 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name" style="font-size:15px">毛泽东思想与中国特色社会主义理论体系概论</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 14. 形势与政策 -->
+      <div class="subject-cell">
+        <div class="subject-cell-name">形势与政策</div>
+        <div class="subject-cell-rule"></div>
+        <div class="subject-cell-import">待导入</div>
+        <div class="subject-cell-stats">
+          <span class="stat-item stat-na">错题 —</span>
+          <span class="stat-item stat-na">难题 —</span>
+          <span class="stat-item stat-na">待复习 —</span>
+        </div>
+      </div>
+
+      <!-- 15. filler cell for grid integrity -->
+      <div class="subject-cell filler"></div>
+
+    </div><!-- /subject-grid -->
+
+    <!-- COMPREHENSIVE CARD -->
+    <div class="comprehensive">
+      <div>
+        <div class="comprehensive-title">综合练习</div>
+        <div class="comprehensive-desc">680 题，含全部示例</div>
+      </div>
+      <span class="comprehensive-arrow">→</span>
+    </div>
+
+    <!-- UTILITY ROW -->
+    <div class="utility-row">
+      <a class="utility-link"><span class="sym">⊞</span> 导入 / 管理题库</a>
+      <a class="utility-link"><span class="sym">⊡</span> 练习历史</a>
+      <a class="utility-link"><span class="sym">⊟</span> 错题本</a>
+      <a class="utility-link"><span class="sym">⊠</span> 导出备份</a>
+    </div>
+
+    <!-- MODIFY BUTTON -->
+    <div class="modify-row">
+      <button class="modify-btn">修改选科</button>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /screen-home -->
+
+<!-- =============================================
+     SCREEN: PRACTICE
+     ============================================= -->
+<div id="screen-practice" class="screen">
+  <div class="container">
+
+    <!-- TOP BAR -->
+    <div class="practice-top">
+      <a class="practice-back">← 退出（进度已保存）</a>
+      <span class="practice-subject">党史</span>
+    </div>
+
+    <!-- MODE TABS -->
+    <div class="practice-tabs">
+      <div class="tab-group">
+        <button class="tab-btn active">全部</button>
+        <button class="tab-btn">错题</button>
+        <button class="tab-btn">难题</button>
+        <button class="tab-btn">背题</button>
+        <button class="tab-btn">复习</button>
+      </div>
+      <div class="tab-shuffle">
+        <button class="active">顺序 ⟳</button>
+        <button>随机</button>
+      </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-area">
+      <div class="progress-stats">
+        <span>已答 <strong>1</strong> / 剩余 <strong>679</strong></span>
+        <span>正确率 <strong>—</strong></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width:0.15%"></div>
+      </div>
+    </div>
+
+    <!-- QUESTION HEADER -->
+    <div class="question-header">
+      <span class="q-type">单选</span>
+      <span class="q-number">第 1 / 680 题</span>
+      <button class="q-mark">☆</button>
+      <a class="q-prev">← 上一题</a>
+    </div>
+
+    <!-- QUESTION STEM -->
+    <div class="question-stem">
+      中国共产党一经成立，就把实现（&nbsp;&nbsp;）作为党的最高理想和最终目标。
+    </div>
+
+    <!-- OPTIONS -->
+    <div class="option-list">
+      <div class="option-item correct">
+        <span class="option-letter">a.</span>
+        <span class="option-text">共产主义</span>
+      </div>
+      <div class="option-item">
+        <span class="option-letter">b.</span>
+        <span class="option-text">社会主义</span>
+      </div>
+      <div class="option-item">
+        <span class="option-letter">c.</span>
+        <span class="option-text">资本主义</span>
+      </div>
+      <div class="option-item">
+        <span class="option-letter">d.</span>
+        <span class="option-text">帝国主义</span>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="result-area">
+      <div class="result-verdict">
+        <span class="mark">✓</span> 已提交 · 回答正确
+      </div>
+      <div class="result-ref">
+        <strong>参考答案：</strong>共产主义
+      </div>
+      <div class="result-analysis">
+        <div class="label">解析</div>
+        <div class="empty">（本题暂无解析）</div>
+      </div>
+    </div>
+
+    <!-- NEXT BUTTON -->
+    <div class="next-row">
+      <button class="next-btn">下一题</button>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /screen-practice -->
+
+<!-- =============================================
+     JAVASCRIPT
+     ============================================= -->
+<script>
+function showScreen(screenId) {
+  // hide all screens
+  document.querySelectorAll('.screen').forEach(function(s) {
+    s.classList.remove('active');
+  });
+  // show target
+  document.getElementById(screenId).classList.add('active');
+  // update switch buttons
+  document.querySelectorAll('.switch-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  var btns = document.querySelectorAll('.switch-btn');
+  if (screenId === 'screen-home') {
+    btns[0].classList.add('active');
+  } else {
+    btns[1].classList.add('active');
+  }
+}
+</script>
+
+</body>
+</html>

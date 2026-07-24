@@ -54,15 +54,15 @@ export default function HistoryPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
-      <Link href="/" className="text-sm text-blue-600">
+      <Link href="/" className="text-sm text-accent">
         ← 返回首页
       </Link>
-      <h1 className="mb-6 mt-2 text-3xl font-bold tracking-tight">练习历史</h1>
+      <h1 className="mb-6 mt-2 text-3xl font-bold tracking-tight text-ink">练习历史</h1>
 
       <section className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">薄弱科目</h2>
         {weak.length === 0 ? (
-          <p className="text-sm text-zinc-500">暂无数据，完成练习后自动统计。</p>
+          <p className="text-sm text-muted">暂无数据，完成练习后自动统计。</p>
         ) : (
           <ul className="space-y-2">
             {weak.map((s) => {
@@ -71,23 +71,23 @@ export default function HistoryPage() {
               return (
                 <li
                   key={s.subject}
-                  className="flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-800"
+                  className="flex items-center justify-between rounded-xl border border-line px-4 py-3"
                 >
                   <Link
                     href={`/practice?subject=${encodeURIComponent(s.subject)}`}
-                    className="font-medium text-blue-600"
+                    className="font-medium text-accent"
                   >
                     {subjectName(s.subject)}
                   </Link>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="text-zinc-500">
+                    <span className="text-muted">
                       {s.correct}/{s.total} 题
                     </span>
                     <span
                       className={
                         weakTag
-                          ? 'font-medium text-red-600'
-                          : 'font-medium text-green-600'
+                          ? 'font-medium text-danger'
+                          : 'font-medium text-success'
                       }
                     >
                       正确率 {pct}%
@@ -103,7 +103,7 @@ export default function HistoryPage() {
       <section className="mb-8">
         <h2 className="mb-3 text-lg font-semibold">高频错题</h2>
         {frequent.length === 0 ? (
-          <p className="text-sm text-zinc-500">暂无反复出错的题（错 2 次及以上）。</p>
+          <p className="text-sm text-muted">暂无反复出错的题（错 2 次及以上）。</p>
         ) : (
           <ul className="space-y-2">
             {frequent.map((s) => {
@@ -112,17 +112,17 @@ export default function HistoryPage() {
               return (
                 <li
                   key={s.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm dark:border-zinc-800"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-line px-4 py-3 text-sm"
                 >
                   <Link
                     href={`/practice?subject=${encodeURIComponent(
                       q.subject,
                     )}&mode=wrong&q=${encodeURIComponent(q.id)}`}
-                    className="line-clamp-2 font-medium text-blue-600"
+                    className="line-clamp-2 font-medium text-accent"
                   >
                     {q.stem.slice(0, 60)}
                   </Link>
-                  <span className="shrink-0 text-xs text-red-600">错 {s.count} 次</span>
+                  <span className="shrink-0 text-xs text-danger">错 {s.count} 次</span>
                 </li>
               )
             })}
@@ -133,25 +133,25 @@ export default function HistoryPage() {
       <section>
         <h2 className="mb-3 text-lg font-semibold">历史记录</h2>
         {entries.length === 0 ? (
-          <p className="text-sm text-zinc-500">暂无记录。</p>
+          <p className="text-sm text-muted">暂无记录。</p>
         ) : (
           <ul className="space-y-2">
             {entries.map((e) => (
               <li
                 key={e.id}
-                className="flex items-center justify-between rounded-xl border border-zinc-200 px-4 py-3 text-sm dark:border-zinc-800"
+                className="flex items-center justify-between rounded-xl border border-line px-4 py-3 text-sm"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-zinc-500">{fmtTime(e.at)}</span>
+                  <span className="text-muted">{fmtTime(e.at)}</span>
                   <Link
                     href={`/practice?subject=${encodeURIComponent(e.subject)}`}
-                    className="font-medium text-blue-600"
+                    className="font-medium text-accent"
                   >
                     {subjectName(e.subject)}
                   </Link>
-                  <span className="text-zinc-400">{MODE_LABEL[e.mode] ?? e.mode}</span>
+                  <span className="text-faint">{MODE_LABEL[e.mode] ?? e.mode}</span>
                 </div>
-                <span className="text-zinc-500">
+                <span className="text-muted">
                   {e.correct}/{e.total} · {Math.round(e.accuracy * 100)}%
                 </span>
               </li>

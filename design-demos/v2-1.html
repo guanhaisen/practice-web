@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大学生刷题 · v2-1 冷静效率</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset & Variables ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --accent: #2f4a7c;
+  --accent-hover: #3b5b8c;
+  --accent-light: #eef1f7;
+  --accent-mid: #d0d5e3;
+  --accent-subtle: #f5f6fa;
+  --bg: #ffffff;
+  --bg-subtle: #f8f9fc;
+  --text-primary: #1e1e2e;
+  --text-secondary: #6b6f7b;
+  --text-tertiary: #9a9ea8;
+  --border: #ececec;
+  --border-light: #f0f0f0;
+  --correct: #1a8a4a;
+  --correct-bg: #f0f9f2;
+  --correct-border: #b8dfc8;
+  --font: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, 'Segoe UI', sans-serif;
+  --max-w: 1040px;
+  --radius: 8px;
+  --radius-sm: 6px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Layout ===== */
+.container {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 32px 64px;
+}
+
+/* ===== Toggle Bar ===== */
+.toggle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 18px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+  user-select: none;
+}
+
+.toggle-btn {
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.toggle-btn:hover { color: var(--text-secondary); }
+.toggle-btn.active { color: var(--accent); }
+
+.toggle-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+}
+
+.toggle-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.8px;
+  margin-left: 4px;
+}
+
+/* ===== Screens ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ============================================================
+   HOME
+   ============================================================ */
+
+.home-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.home-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.3px;
+}
+
+.home-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ===== Subject Grid ===== */
+.subject-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.subject-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.subject-card:hover {
+  border-color: var(--accent-mid);
+  box-shadow: 0 1px 6px rgba(47, 74, 124, 0.06);
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.card-top-left { min-width: 0; }
+
+.subject-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.subject-status {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.subject-status.has-data {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Progress Ring */
+.ring-wrap {
+  flex-shrink: 0;
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.ring-wrap svg {
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+}
+
+.ring-bg { fill: none; stroke: var(--border); stroke-width: 3; }
+.ring-fg { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+
+.ring-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+}
+
+/* Card Stats */
+.card-stats {
+  display: flex;
+  gap: 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  border-top: 1px solid var(--border-light);
+  padding-top: 12px;
+}
+
+.card-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.card-stat + .card-stat { border-left: 1px solid var(--border-light); padding-left: 0; }
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1;
+}
+
+.stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.stat-value.has-count { color: var(--text-primary); }
+
+/* Catch-all card */
+.subject-card.catch-all {
+  background: var(--accent-subtle);
+  border-color: var(--accent-mid);
+}
+
+.subject-card.catch-all .subject-name {
+  color: var(--accent);
+}
+
+/* ===== Home Bottom ===== */
+.home-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.entry-links {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.entry-link {
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+
+.entry-link:hover { color: var(--accent); }
+
+.btn-modify {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--accent-mid);
+  border-radius: var(--radius-sm);
+  padding: 8px 22px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-modify:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+/* ============================================================
+   PRACTICE
+   ============================================================ */
+
+/* Practice Header */
+.practice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.practice-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color 0.2s;
+}
+
+.practice-back:hover { color: var(--accent); }
+
+.practice-back .arrow { font-size: 16px; line-height: 1; }
+
+.practice-subject {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ===== Mode Tabs ===== */
+.mode-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 20px;
+}
+
+.mode-tab {
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 0 10px;
+  margin-bottom: -1px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.mode-tab:hover { color: var(--text-primary); }
+.mode-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.order-toggle {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  user-select: none;
+}
+
+.order-opt {
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.order-opt.active {
+  color: var(--accent);
+  background: var(--accent-light);
+}
+
+.order-sep { color: var(--border); }
+
+/* ===== Progress ===== */
+.practice-progress {
+  margin-bottom: 28px;
+}
+
+.progress-track {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  width: 0.15%;
+  transition: width 0.4s;
+}
+
+.progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ===== Question Card ===== */
+.question-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Meta row */
+.q-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  font-size: 13px;
+}
+
+.q-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  padding: 2px 9px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+}
+
+.q-number {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.q-star {
+  margin-left: auto;
+  font-size: 18px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.q-star:hover { color: var(--accent); }
+
+.q-prev {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  padding: 0;
+}
+
+.q-prev:hover { color: var(--accent); }
+
+/* Stem */
+.q-stem {
+  font-size: 16px;
+  line-height: 1.9;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+/* Options */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.opt {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--text-primary);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.opt:hover { border-color: var(--accent-mid); }
+
+.opt.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+
+.opt.correct {
+  border-color: var(--correct);
+  background: var(--correct-bg);
+}
+
+.opt-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.opt.selected .opt-marker {
+  border-color: var(--accent);
+}
+
+.opt.selected .opt-marker::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.opt.correct .opt-marker {
+  border-color: var(--correct);
+  background: var(--correct);
+}
+
+.opt.correct .opt-marker::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.opt-badge {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--correct);
+  background: var(--correct-bg);
+  border: 1px solid var(--correct-border);
+  padding: 2px 9px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Result */
+.result-area {
+  border-top: 1px solid var(--border-light);
+  padding-top: 20px;
+}
+
+.result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--correct);
+  background: var(--correct-bg);
+  padding: 5px 14px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+
+.result-badge .check { font-size: 14px; }
+
+.result-ref {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.result-ref strong {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.result-analysis {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding: 16px 20px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-light);
+}
+
+/* Next Button */
+.btn-next {
+  display: block;
+  width: 100%;
+  padding: 13px 24px;
+  margin-top: 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.btn-next:hover { background: var(--accent-hover); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px) {
+  .subject-grid { grid-template-columns: repeat(3, 1fr); }
+  .container { padding: 0 24px 48px; }
+}
+
+@media (max-width: 640px) {
+  .subject-grid { grid-template-columns: repeat(2, 1fr); }
+  .container { padding: 0 16px 40px; }
+  .toggle-bar { gap: 14px; flex-wrap: wrap; }
+  .home-bottom { flex-direction: column; gap: 16px; align-items: stretch; }
+  .entry-links { justify-content: center; }
+  .btn-modify { text-align: center; }
+  .question-card { padding: 24px 20px; }
+  .mode-bar { gap: 12px; overflow-x: auto; }
+  .home-header h1 { font-size: 24px; }
+}
+
+@media (max-width: 420px) {
+  .subject-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .subject-card { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ===== Toggle Bar ===== -->
+  <div class="toggle-bar">
+    <button class="toggle-btn active" data-target="home">首页</button>
+    <span class="toggle-divider"></span>
+    <button class="toggle-btn" data-target="practice">练习页</button>
+    <span class="toggle-label">v2-1 · 冷静效率</span>
+  </div>
+
+  <!-- ============================================================
+       HOME SCREEN
+       ============================================================ -->
+  <div class="screen active" id="screen-home">
+
+    <div class="home-header">
+      <h1>大学生刷题</h1>
+      <p>已选科目，点击开始练习；进度按科目自动保存在本地。</p>
+    </div>
+
+    <div class="subject-grid">
+
+      <!-- 1. 高等数学(上) -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">高等数学(上)</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 2. 高等数学(下) -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">高等数学(下)</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 3. 大学英语 I -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">大学英语 I</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 4. 大学英语 II -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">大学英语 II</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 5. 大学英语 III -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">大学英语 III</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 6. 党史 [with ring] -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">党史</div>
+            <div class="subject-status has-data">共 680 题</div>
+          </div>
+          <div class="ring-wrap">
+            <svg viewBox="0 0 44 44">
+              <circle class="ring-bg" cx="22" cy="22" r="16"/>
+              <circle class="ring-fg" cx="22" cy="22" r="16" stroke-dasharray="100.5" stroke-dashoffset="0"/>
+            </svg>
+            <span class="ring-label">680</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">0</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">0</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">0</span></div>
+        </div>
+      </div>
+
+      <!-- 7. 马克思主义原理 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">马克思主义原理</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 8. 大学物理 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">大学物理</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 9. 线性代数 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">线性代数</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 10. 概率数理统计 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">概率数理统计</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 11. 思想道德与法治 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">思想道德与法治</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 12. 中国近现代史纲要 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">中国近现代史纲要</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 13. 毛泽东思想和中国特色社会主义理论体系概论 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">毛泽东思想和中国特色社会主义理论体系概论</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 14. 形势与政策 -->
+      <div class="subject-card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">形势与政策</div>
+            <div class="subject-status">待导入</div>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">—</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+
+      <!-- 15. 综合练习 [catch-all, with ring] -->
+      <div class="subject-card catch-all">
+        <div class="card-top">
+          <div class="card-top-left">
+            <div class="subject-name">综合练习</div>
+            <div class="subject-status has-data">680 题 · 含全部示例</div>
+          </div>
+          <div class="ring-wrap">
+            <svg viewBox="0 0 44 44">
+              <circle class="ring-bg" cx="22" cy="22" r="16"/>
+              <circle class="ring-fg" cx="22" cy="22" r="16" stroke-dasharray="100.5" stroke-dashoffset="0"/>
+            </svg>
+            <span class="ring-label">680</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="card-stat"><span class="stat-label">错题</span><span class="stat-value">0</span></div>
+          <div class="card-stat"><span class="stat-label">难题</span><span class="stat-value">0</span></div>
+          <div class="card-stat"><span class="stat-label">待复习</span><span class="stat-value">0</span></div>
+        </div>
+      </div>
+
+    </div><!-- /subject-grid -->
+
+    <!-- Bottom -->
+    <div class="home-bottom">
+      <div class="entry-links">
+        <span class="entry-link">导入/管理题库</span>
+        <span class="entry-link">练习历史</span>
+        <span class="entry-link">错题本</span>
+        <span class="entry-link">导出备份</span>
+      </div>
+      <button class="btn-modify">修改选科</button>
+    </div>
+
+  </div><!-- /screen-home -->
+
+  <!-- ============================================================
+       PRACTICE SCREEN
+       ============================================================ -->
+  <div class="screen" id="screen-practice">
+
+    <!-- Practice Header -->
+    <div class="practice-header">
+      <button class="practice-back" id="btnBack">
+        <span class="arrow">&#8592;</span> 退出（进度已保存）
+      </button>
+      <span class="practice-subject">党史</span>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="mode-bar">
+      <button class="mode-tab active">全部</button>
+      <button class="mode-tab">错题</button>
+      <button class="mode-tab">难题</button>
+      <button class="mode-tab">背题</button>
+      <button class="mode-tab">复习</button>
+      <div class="order-toggle">
+        <span class="order-opt active">顺序</span>
+        <span class="order-sep">/</span>
+        <span class="order-opt">随机</span>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="practice-progress">
+      <div class="progress-track">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="progress-meta">
+        <span>已答 1 / 剩余 679</span>
+        <span>正确率 —</span>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="question-card">
+
+      <!-- Meta -->
+      <div class="q-meta">
+        <span class="q-type">单选</span>
+        <span class="q-number">第 1 / 680 题</span>
+        <button class="q-star">&#9734;</button>
+        <button class="q-prev">上一题</button>
+      </div>
+
+      <!-- Stem -->
+      <div class="q-stem">
+        中国共产党一经成立，就把实现（ ）作为党的最高理想和最终目标。
+      </div>
+
+      <!-- Options (post-submit: correct) -->
+      <div class="options">
+        <div class="opt selected correct">
+          <span class="opt-marker"></span>
+          <span>共产主义</span>
+          <span class="opt-badge">正确</span>
+        </div>
+        <div class="opt">
+          <span class="opt-marker"></span>
+          <span>社会主义</span>
+        </div>
+        <div class="opt">
+          <span class="opt-marker"></span>
+          <span>资本主义</span>
+        </div>
+        <div class="opt">
+          <span class="opt-marker"></span>
+          <span>帝国主义</span>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-area">
+        <div class="result-badge">
+          <span class="check">&#10003;</span> 已提交 &#183; 回答正确
+        </div>
+        <div class="result-ref">
+          <strong>参考答案：</strong>共产主义
+        </div>
+        <div class="result-analysis">
+          （本题暂无解析）
+        </div>
+        <button class="btn-next">下一题</button>
+      </div>
+
+    </div><!-- /question-card -->
+
+  </div><!-- /screen-practice -->
+
+</div><!-- /container -->
+
+<script>
+(function() {
+  // ---- screen toggle ----
+  var btns = document.querySelectorAll('.toggle-btn');
+  var screens = {
+    home: document.getElementById('screen-home'),
+    practice: document.getElementById('screen-practice')
+  };
+
+  function showScreen(id) {
+    btns.forEach(function(b) { b.classList.toggle('active', b.dataset.target === id); });
+    Object.keys(screens).forEach(function(k) { screens[k].classList.toggle('active', k === id); });
+  }
+
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() { showScreen(btn.dataset.target); });
+  });
+
+  // back button -> home
+  document.getElementById('btnBack').addEventListener('click', function() { showScreen('home'); });
+
+  // ---- mode tab switch (visual only) ----
+  var modeTabs = document.querySelectorAll('.mode-tab');
+  modeTabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      modeTabs.forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+    });
+  });
+
+  // ---- order toggle (visual only) ----
+  var orderOpts = document.querySelectorAll('.order-opt');
+  orderOpts.forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      orderOpts.forEach(function(o) { o.classList.remove('active'); });
+      opt.classList.add('active');
+    });
+  });
+
+  // ---- star toggle (visual only) ----
+  var star = document.querySelector('.q-star');
+  star.addEventListener('click', function() {
+    star.innerHTML = star.innerHTML === '&#9734;' ? '&#9733;' : '&#9734;';
+  });
+})();
+</script>
+
+</body>
+</html>
