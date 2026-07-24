@@ -9,6 +9,7 @@ import {
   type BankResult,
 } from '@/lib/bank'
 import { applyBackup } from '@/lib/backup'
+import { parseCsv } from '@/lib/csv'
 import { subjects, subjectName, GENERAL_SUBJECT } from '@/lib/subjects'
 
 const FORMAT_HINT = `[
@@ -23,12 +24,19 @@ const FORMAT_HINT = `[
   }
 ]`
 
+const CSV_TEMPLATE = `id,type,subject,stem,options,answer,explanation
+q1,single,math-1,1+1等于几,1|2|3,2,基础加法示例
+q2,multiple,math-1,下列哪些是偶数,1|2|3|4,2|4,
+q3,judge,math-1,2是偶数,正确|错误,正确,判断示例
+q4,fill,math-1,1+1=__,2,填空示例`
+
 export default function ImportPage() {
   const [text, setText] = useState('')
   const [result, setResult] = useState<BankResult | null>(null)
   const [saved, setSaved] = useState(false)
   const [imported, setImported] = useState(hasImportedBank())
   const [restored, setRestored] = useState(false)
+  const [csvText, setCsvText] = useState('')
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
@@ -75,14 +83,38 @@ export default function ImportPage() {
     if (!f) return
     f.text()
       .then((t) => {
-        const data = JSON.parse(t)
-        applyBackup(data)
+        let parsed: unknown
+        try {
+          parsed = JSON.parse(t)
+        } catch {
+          throw new Error('文件不是合法 JSON')
+        }
+        applyBackup(parsed)
         setImported(hasImportedBank())
         setRestored(true)
       })
-      .catch(() => {
-        alert('备份文件解析失败')
+      .catch((err) => {
+        alert('恢复失败：' + (err instanceof Error ? err.message : '文件格式错误'))
       })
+  }
+
+  function downloadTemplate() {
+    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'quiz-template.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function parseCsvBtn() {
+    const { questions, errors } = parseCsv(csvText)
+    if (errors.length > 0) {
+      setResult({ ok: false, errors, questions: [] })
+      return
+    }
+    setResult(validateBank(questions))
   }
 
   const dist = result?.ok
@@ -141,6 +173,40 @@ export default function ImportPage() {
           可选科目 id：{subjects.map((s) => s.id).join('、')}、{GENERAL_SUBJECT}
         </p>
       </details>
+
+      <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+        <h2 className="mb-2 text-lg font-semibold">或用 CSV 批量导入</h2>
+        <p className="mb-3 text-sm text-zinc-500">
+          列顺序：id, type, subject, stem, options, answer, explanation。多选/填空的
+          options 与 answer 用
+          <code className="mx-1 rounded bg-zinc-100 px-1 dark:bg-zinc-800">|</code>
+          分隔；首行可为表头。
+        </p>
+        <button
+          type="button"
+          onClick={downloadTemplate}
+          className="mb-3 rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 dark:border-zinc-700"
+        >
+          下载 CSV 模板
+        </button>
+        <textarea
+          value={csvText}
+          onChange={(e) => {
+            setCsvText(e.target.value)
+            setResult(null)
+            setSaved(false)
+          }}
+          placeholder="在此粘贴 CSV 文本…"
+          className="h-40 w-full rounded-xl border border-zinc-300 p-3 font-mono text-sm outline-none focus:border-blue-500 dark:border-zinc-700 dark:bg-zinc-800"
+        />
+        <button
+          type="button"
+          onClick={parseCsvBtn}
+          className="mt-3 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+        >
+          解析 CSV
+        </button>
+      </div>
 
       {result && !result.ok && (
         <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950">

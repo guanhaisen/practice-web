@@ -5,6 +5,7 @@ import { downloadBackup } from '@/lib/backup'
 import { subjects, GENERAL_SUBJECT, GENERAL_NAME, subjectName } from '@/lib/subjects'
 import { loadBank } from '@/lib/bank'
 import { loadFlags } from '@/lib/flags'
+import { loadSrs, type SrsCard } from '@/lib/srs'
 import {
   storageKeyFor,
   normalizeProgress,
@@ -34,6 +35,7 @@ export default function Home() {
   const [picks, setPicks] = useState<Set<string>>(new Set())
   const [bank, setBank] = useState<Question[]>(() => loadBank())
   const [flags, setFlags] = useState<Set<string>>(() => loadFlags())
+  const [srs, setSrs] = useState<Record<string, SrsCard>>(() => loadSrs())
 
   useEffect(() => {
     const saved = loadSelectedSubjects()
@@ -48,6 +50,7 @@ export default function Home() {
     }
     setBank(loadBank())
     setFlags(loadFlags())
+    setSrs(loadSrs())
     setHydrated(true)
   }, [])
 
@@ -152,6 +155,9 @@ export default function Home() {
             (q) => q.subject === s.id && flags.has(q.id),
           ).length
           const empty = total === 0
+          const dueCount = bank.filter(
+            (q) => q.subject === s.id && (srs[q.id]?.due ?? 0) <= Date.now(),
+          ).length
           return (
             <div
               key={s.id}
@@ -182,6 +188,14 @@ export default function Home() {
                   >
                     难题 {flagCount}
                   </Link>
+                  {dueCount > 0 && (
+                    <Link
+                      href={`/practice?subject=${s.id}&mode=review`}
+                      className="text-indigo-500 hover:underline"
+                    >
+                      复习 {dueCount}
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={() => resetSubject(s.id)}

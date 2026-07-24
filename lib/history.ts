@@ -6,6 +6,7 @@ export interface HistoryEntry {
   answered: number
   correct: number
   accuracy: number // 0~1
+  missed: string[] // 本次答错的题 id
   at: number // 时间戳
 }
 
@@ -28,6 +29,7 @@ export function recordHistory(input: {
   total: number
   answered: number
   correct: number
+  missed: string[]
 }): HistoryEntry {
   const entries = loadHistory()
   const accuracy = input.total > 0 ? input.correct / input.total : 0
@@ -72,5 +74,26 @@ export function weaknessBySubject(entries: HistoryEntry[]): SubjectStat[] {
     })
   }
   stats.sort((a, b) => a.accuracy - b.accuracy)
+  return stats
+}
+
+export interface QuestionStat {
+  id: string
+  count: number
+}
+
+// 跨历史聚合每题错误次数，返回降序（反复错在前）
+export function weaknessByQuestion(entries: HistoryEntry[]): QuestionStat[] {
+  const map = new Map<string, number>()
+  for (const e of entries) {
+    for (const id of e.missed ?? []) {
+      map.set(id, (map.get(id) ?? 0) + 1)
+    }
+  }
+  const stats: QuestionStat[] = []
+  for (const [id, count] of map.entries()) {
+    stats.push({ id, count })
+  }
+  stats.sort((a, b) => b.count - a.count)
   return stats
 }

@@ -4,9 +4,12 @@ import Link from 'next/link'
 import {
   loadHistory,
   weaknessBySubject,
+  weaknessByQuestion,
   type HistoryEntry,
 } from '@/lib/history'
 import { subjectName } from '@/lib/subjects'
+import { loadBank } from '@/lib/bank'
+import type { Question } from '@/lib/questions'
 
 const MODE_LABEL: Record<string, string> = {
   all: '全部',
@@ -43,6 +46,11 @@ export default function HistoryPage() {
   }
 
   const weak = weaknessBySubject(entries)
+  const bank = loadBank()
+  const byId = new Map<string, Question>(bank.map((q) => [q.id, q]))
+  const frequent = weaknessByQuestion(entries)
+    .filter((s) => s.count >= 2)
+    .slice(0, 30)
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
@@ -85,6 +93,36 @@ export default function HistoryPage() {
                       正确率 {pct}%
                     </span>
                   </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="mb-8">
+        <h2 className="mb-3 text-lg font-semibold">高频错题</h2>
+        {frequent.length === 0 ? (
+          <p className="text-sm text-zinc-500">暂无反复出错的题（错 2 次及以上）。</p>
+        ) : (
+          <ul className="space-y-2">
+            {frequent.map((s) => {
+              const q = byId.get(s.id)
+              if (!q) return null
+              return (
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm dark:border-zinc-800"
+                >
+                  <Link
+                    href={`/practice?subject=${encodeURIComponent(
+                      q.subject,
+                    )}&mode=wrong&q=${encodeURIComponent(q.id)}`}
+                    className="line-clamp-2 font-medium text-blue-600"
+                  >
+                    {q.stem.slice(0, 60)}
+                  </Link>
+                  <span className="shrink-0 text-xs text-red-600">错 {s.count} 次</span>
                 </li>
               )
             })}

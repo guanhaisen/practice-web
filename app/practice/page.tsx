@@ -7,12 +7,13 @@ import { loadBank } from '@/lib/bank'
 import { GENERAL_SUBJECT, subjectName } from '@/lib/subjects'
 import { loadFlags, saveFlags } from '@/lib/flags'
 import { recordHistory } from '@/lib/history'
+import { loadSrs, reviewCard, saveSrs, type SrsCard } from '@/lib/srs'
 import type { Question } from '@/lib/questions'
 import QuestionCard from '@/components/QuestionCard'
 import ReviewCard from '@/components/ReviewCard'
 import Summary from '@/components/Summary'
 
-type Mode = 'all' | 'wrong' | 'flags' | 'memory'
+type Mode = 'all' | 'wrong' | 'flags' | 'memory' | 'review'
 
 // 按科目确定性打乱，保证刷新后同科目顺序一致（续练不错位）
 function seededShuffle<T>(arr: T[], seed: string): T[] {
@@ -41,17 +42,22 @@ function PracticeInner() {
   const subject = params.get('subject') ?? GENERAL_SUBJECT
   const modeParam = params.get('mode')
   const mode: Mode =
-    modeParam === 'wrong' || modeParam === 'flags' || modeParam === 'memory'
+    modeParam === 'wrong' ||
+    modeParam === 'flags' ||
+    modeParam === 'memory' ||
+    modeParam === 'review'
       ? modeParam
       : 'all'
 
   const [bank, setBank] = useState<Question[]>(() => loadBank())
   const [flags, setFlags] = useState<Set<string>>(() => loadFlags())
+  const [srs, setSrs] = useState<Record<string, SrsCard>>(() => loadSrs())
   const [localIndex, setLocalIndex] = useState(0)
 
   useEffect(() => {
     setBank(loadBank())
     setFlags(loadFlags())
+    setSrs(loadSrs())
   }, [])
 
   useEffect(() => {
@@ -83,6 +89,7 @@ function PracticeInner() {
   }
 
   const ordered = shuffle ? seededShuffle(allItems, subject) : allItems
+  const now = Date.now()
 
   const {
     progress,
@@ -104,7 +111,9 @@ function PracticeInner() {
         ? ordered.filter((q) => progress.wrongIds.includes(q.id))
         : mode === 'memory'
           ? ordered
-          : ordered.filter((q) => flags.has(q.id))
+          : mode === 'review'
+            ? ordered.filter((q) => (srs[q.id]?.due ?? 0) <= now)
+            : ordered.filter((q) => flags.has(q.id))
 
   const displayIndex = mode === 'all' ? progress.currentIndex : localIndex
   const question = items[displayIndex]
@@ -127,7 +136,10 @@ function PracticeInner() {
       const correct = items.filter(
         (q) => progress.answers[q.id]?.correct === true,
       ).length
-      recordHistory({ subject, mode, total: items.length, answered, correct })
+      const missed = items
+        .filter((q) => progress.answers[q.id]?.correct === false)
+        .map((q) => q.id)
+      recordHistory({ subject, mode, total: items.length, answered, correct, missed })
     }
   }, [items.length, answered, progress, subject, mode])
 
@@ -146,6 +158,18 @@ function PracticeInner() {
       else n.add(id)
       saveFlags(n)
       return n
+    })
+  }
+
+  function markRemembered(id: string, remembered: boolean) {
+    setSrs((prev) => {
+      const next = reviewCard(prev, id, remembered, Date.now())
+      try {
+        saveSrs(next)
+      } catch {
+        /* 忽略写入失败 */
+      }
+      return next
     })
   }
 
@@ -230,6 +254,9 @@ function PracticeInner() {
           <Tab href={`/practice?subject=${subject}&mode=memory`} active={mode === 'memory'}>
             背题
           </Tab>
+          <Tab href={`/practice?subject=${subject}&mode=review`} active={mode === 'review'}>
+            复习
+          </Tab>
         </div>
         <button
           type="button"
@@ -240,7 +267,7 @@ function PracticeInner() {
         </button>
       </div>
 
-      {mode !== 'memory' && (
+      {mode !== 'memory' && mode !== 'review' && (
         <div className="mb-4">
           <div className="mb-1 flex justify-between text-xs text-zinc-500">
             <span>
@@ -260,7 +287,7 @@ function PracticeInner() {
         </div>
       )}
 
-      {mode === 'memory' ? (
+      {(mode === 'memory' || mode === 'review') ? (
         <ReviewCard
           key={question.id}
           question={question}
@@ -268,7 +295,10 @@ function PracticeInner() {
           total={items.length}
           flagged={flags.has(question.id)}
           onToggleFlag={() => toggleFlag(question.id)}
-          onMark={(c: boolean) => selfGrade(question.id, c)}
+          onMark={(c: boolean) => {
+            selfGrade(question.id, c)
+            markRemembered(question.id, c)
+          }}
           onNext={() => setLocalIndex((i) => Math.min(i + 1, items.length))}
           onPrev={() => setLocalIndex((i) => Math.max(i - 1, 0))}
         />
