@@ -20,6 +20,8 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/* 根布局全站字体；@next/next/no-page-custom-font 针对 pages 目录，App Router 下不适用 */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap"
           rel="stylesheet"

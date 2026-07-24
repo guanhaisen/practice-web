@@ -6,7 +6,7 @@ import {
   type Progress,
 } from './progress'
 import { SUBJECTS_KEY, loadSelectedSubjects } from './userPrefs'
-import { FLAGS_KEY, loadFlags } from './flags'
+import { FLAGS_KEY } from './flags'
 import { subjects, GENERAL_SUBJECT } from './subjects'
 
 export interface Backup {

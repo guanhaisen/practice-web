@@ -17,6 +17,8 @@ export function useProgress(items: Question[], subject: string) {
   const [progress, setProgress] = useState<Progress>(createEmptyProgress())
   const [hydrated, setHydrated] = useState(false)
 
+  // 挂载时从 localStorage 读取进度，属外部 store 初始化，非派生命题
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const raw = localStorage.getItem(storageKeyFor(subject))
@@ -28,6 +30,7 @@ export function useProgress(items: Question[], subject: string) {
       setHydrated(true)
     }
   }, [subject, TOTAL])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // 接收题目对象而非索引，避免全量/专项列表索引错位
   const submitAnswer = useCallback(

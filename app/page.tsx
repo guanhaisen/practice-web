@@ -38,6 +38,8 @@ export default function Home() {
   const [flags, setFlags] = useState<Set<string>>(() => loadFlags())
   const [srs, setSrs] = useState<Record<string, SrsCard>>(() => loadSrs())
 
+  /* 挂载时从 localStorage 同步初始状态，属外部 store 初始化，非派生命题 */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const saved = loadSelectedSubjects()
     if (saved === null) {
@@ -54,6 +56,7 @@ export default function Home() {
     setSrs(loadSrs())
     setHydrated(true)
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function toggle(id: string) {
     setPicks((prev) => {

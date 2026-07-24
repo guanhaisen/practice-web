@@ -22,6 +22,8 @@ function WrongInner() {
   const [overview, setOverview] = useState<{ id: string; count: number }[]>([])
   const [hydrated, setHydrated] = useState(false)
 
+  /* 挂载时从 localStorage 读取进度与概览，属外部 store 初始化 */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const bank = loadBank()
     if (subject) {
@@ -50,10 +52,13 @@ function WrongInner() {
     }
     setHydrated(true)
   }, [subject])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function removeWrong(id: string) {
     if (!progress) return
     const wrongIds = progress.wrongIds.filter((x) => x !== id)
+    // 事件处理内记录更新时间，非 render 期副作用
+    // eslint-disable-next-line react-hooks/purity
     const next: Progress = { ...progress, wrongIds, updatedAt: Date.now() }
     setProgress(next)
     try {
@@ -113,12 +118,20 @@ function WrongInner() {
       </p>
 
       {subject && wrongQs.length > 0 && (
-        <Link
-          href={`/practice?subject=${encodeURIComponent(subject)}&mode=wrong`}
-          className="mb-6 inline-block rounded-xl bg-accent px-5 py-2.5 font-medium text-white transition-colors hover:bg-accent-hover"
-        >
-          重练本科技错题
-        </Link>
+        <div className="mb-6 flex flex-wrap gap-3">
+          <Link
+            href={`/practice?subject=${encodeURIComponent(subject)}&mode=wrong`}
+            className="inline-block rounded-xl bg-accent px-5 py-2.5 font-medium text-white transition-colors hover:bg-accent-hover"
+          >
+            重练本科技错题
+          </Link>
+          <Link
+            href={`/practice?subject=${encodeURIComponent(subject)}&mode=recap`}
+            className="inline-block rounded-xl border border-line-strong px-5 py-2.5 font-medium text-ink transition-colors hover:border-accent"
+          >
+            回顾本科技错题
+          </Link>
+        </div>
       )}
 
       {wrongQs.length === 0 ? (

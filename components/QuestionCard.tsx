@@ -90,6 +90,8 @@ export default function QuestionCard({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+  // 键盘监听依赖 submitted/question/canSubmit/onNext 已足够，内部引用的处理函数由这些状态派生
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitted, question, canSubmit, onNext])
 
   const correctAnswer = Array.isArray(question.answer)
@@ -200,7 +202,7 @@ export default function QuestionCard({
             >
               {isWrongAnswer(question, value) ? '回答错误' : '回答正确'}
             </p>
-          ) : selfGraded === null ? (
+          ) : selfGraded === null && onSelfGrade ? (
             <div className="mb-2">
               <p className="mb-2 font-medium text-muted">
                 提交成功（填空/简答请你自行对照参考答案）

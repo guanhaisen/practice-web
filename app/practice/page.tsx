@@ -13,7 +13,7 @@ import QuestionCard from '@/components/QuestionCard'
 import ReviewCard from '@/components/ReviewCard'
 import Summary from '@/components/Summary'
 
-type Mode = 'all' | 'wrong' | 'flags' | 'memory' | 'review'
+type Mode = 'all' | 'wrong' | 'flags' | 'memory' | 'review' | 'recap'
 
 // 按科目确定性打乱，保证刷新后同科目顺序一致（续练不错位）
 function seededShuffle<T>(arr: T[], seed: string): T[] {
@@ -45,7 +45,8 @@ function PracticeInner() {
     modeParam === 'wrong' ||
     modeParam === 'flags' ||
     modeParam === 'memory' ||
-    modeParam === 'review'
+    modeParam === 'review' ||
+    modeParam === 'recap'
       ? modeParam
       : 'all'
 
@@ -54,20 +55,28 @@ function PracticeInner() {
   const [srs, setSrs] = useState<Record<string, SrsCard>>(() => loadSrs())
   const [localIndex, setLocalIndex] = useState(0)
 
+  /* 挂载时从 localStorage 同步初始状态，属外部 store 初始化，非派生命题 */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setBank(loadBank())
     setFlags(loadFlags())
     setSrs(loadSrs())
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
+  /* 切换科目/模式时重置练习位置 */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setLocalIndex(0)
   }, [mode, subject])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const allItems =
     subject === GENERAL_SUBJECT ? bank : bank.filter((q) => q.subject === subject)
 
   const [shuffle, setShuffle] = useState(false)
+  /* 读取本地"随机/顺序"偏好 */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       setShuffle(localStorage.getItem('quiz-shuffle-v1') === '1')
@@ -75,6 +84,7 @@ function PracticeInner() {
       /* 忽略 */
     }
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
   function toggleShuffle() {
     setShuffle((s) => {
       const n = !s
@@ -89,7 +99,7 @@ function PracticeInner() {
   }
 
   const ordered = shuffle ? seededShuffle(allItems, subject) : allItems
-  const now = Date.now()
+  const [now] = useState(() => Date.now())
 
   const {
     progress,
@@ -104,15 +114,37 @@ function PracticeInner() {
     restart,
   } = useProgress(allItems, subject)
 
+  // 专项列表（错题 / 复习）在进入本批时快照一次，练习期间固定，
+  // 避免作答过程中 wrongIds / due 变化导致列表动态缩短、与 localIndex 错位而漏题
+  const isSpecialMode = mode === 'wrong' || mode === 'review' || mode === 'recap'
+  const [snapshot, setSnapshot] = useState<Question[] | null>(null)
+  const snapKeyRef = useRef('')
+
+  /* 进入错题/复习本批时快照一次题目列表，练习期间固定（避免列表动态缩短错位） */
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (!hydrated) return
+    const key = `${mode}:${subject}`
+    if (snapKeyRef.current === key) return
+    snapKeyRef.current = key
+    if (mode === 'wrong' || mode === 'recap') {
+      setSnapshot(ordered.filter((q) => progress.wrongIds.includes(q.id)))
+    } else if (mode === 'review') {
+      setSnapshot(ordered.filter((q) => (srs[q.id]?.due ?? 0) <= now))
+    } else {
+      setSnapshot(null)
+    }
+    setLocalIndex(0)
+  }, [mode, subject, hydrated, ordered, progress, srs, now])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   const items =
     mode === 'all'
       ? ordered
-      : mode === 'wrong'
-      ? ordered.filter((q) => progress.wrongIds.includes(q.id))
-      : mode === 'memory'
-        ? ordered
-        : mode === 'review'
-          ? ordered.filter((q) => (srs[q.id]?.due ?? 0) <= now)
+      : isSpecialMode
+        ? (snapshot ?? [])
+        : mode === 'memory'
+          ? ordered
           : ordered.filter((q) => flags.has(q.id))
 
   const displayIndex = mode === 'all' ? progress.currentIndex : localIndex
@@ -129,6 +161,7 @@ function PracticeInner() {
 
   // 本批全部作答完成后记录一次历史（用于薄弱分析）
   const recordedRef = useRef(false)
+  /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     if (recordedRef.current) return
     if (items.length > 0 && answered >= items.length) {
@@ -142,14 +175,18 @@ function PracticeInner() {
       recordHistory({ subject, mode, total: items.length, answered, correct, missed })
     }
   }, [items.length, answered, progress, subject, mode])
+  /* eslint-enable react-hooks/exhaustive-deps */
 
-  // 从错题本"重练"跳转：定位到指定题目（非全部模式用 localIndex）
+  // 从错题本"重练"跳转：定位到指定题目（进入本批时定位一次，非派生命题）
   const focusId = params.get('q')
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!focusId || !hydrated) return
-    const idx = items.findIndex((q) => q.id === focusId)
+    const list = mode === 'all' ? ordered : (snapshot ?? [])
+    const idx = list.findIndex((q) => q.id === focusId)
     if (idx >= 0 && mode !== 'all') setLocalIndex(idx)
-  }, [focusId, hydrated, items, mode])
+  }, [focusId, hydrated, mode, ordered, snapshot])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function toggleFlag(id: string) {
     setFlags((prev) => {
@@ -203,10 +240,19 @@ function PracticeInner() {
     )
   }
 
+  // 快照就绪前先占位，避免误报"暂无错题"
+  if (isSpecialMode && snapshot === null) {
+    return (
+      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center text-muted">
+        加载中…
+      </main>
+    )
+  }
+
   if (items.length === 0) {
     return (
       <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 text-center text-muted">
-        {mode === 'wrong' ? '该科目暂无错题，' : '该科目暂无标记题，'}
+        {mode === 'wrong' || mode === 'recap' ? '该科目暂无错题，' : '该科目暂无标记题，'}
         <Link href={`/practice?subject=${subject}`} className="text-accent">
           去全部题目练习
         </Link>
@@ -228,8 +274,11 @@ function PracticeInner() {
     )
   }
 
-  const saved = progress.answers[question.id]?.value
-  const answeredFlag = !!progress.answers[question.id]
+  // 重练错题：清除历史作答预填，强制从零作答；回顾错题：直接以已提交态呈现（显示答案）
+  const isRedo = mode === 'wrong'
+  const reviewMode = mode === 'recap'
+  const saved = isRedo || reviewMode ? undefined : progress.answers[question.id]?.value
+  const answeredFlag = reviewMode ? true : isRedo ? false : !!progress.answers[question.id]
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16">
@@ -247,6 +296,9 @@ function PracticeInner() {
           </Tab>
           <Tab href={`/practice?subject=${subject}&mode=wrong`} active={mode === 'wrong'}>
             错题
+          </Tab>
+          <Tab href={`/practice?subject=${subject}&mode=recap`} active={mode === 'recap'}>
+            回顾
           </Tab>
           <Tab href={`/practice?subject=${subject}&mode=flags`} active={mode === 'flags'}>
             难题
@@ -267,7 +319,7 @@ function PracticeInner() {
         </button>
       </div>
 
-      {mode !== 'memory' && mode !== 'review' && (
+      {mode !== 'memory' && mode !== 'review' && mode !== 'recap' && (
         <div className="mb-4">
           <div className="mb-1 flex justify-between text-xs text-muted">
             <span>
@@ -313,7 +365,7 @@ function PracticeInner() {
           flagged={flags.has(question.id)}
           onToggleFlag={() => toggleFlag(question.id)}
           onSubmit={(value) => submitAnswer(question, value)}
-          onSelfGrade={(c) => selfGrade(question.id, c)}
+          onSelfGrade={reviewMode ? undefined : (c) => selfGrade(question.id, c)}
           onNext={
             mode === 'all'
               ? next

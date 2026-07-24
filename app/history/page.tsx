@@ -34,10 +34,13 @@ export default function HistoryPage() {
   const [entries, setEntries] = useState<HistoryEntry[]>([])
   const [hydrated, setHydrated] = useState(false)
 
+  /* 挂载时从 localStorage 读取历史，属外部 store 初始化 */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setEntries(loadHistory())
     setHydrated(true)
   }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!hydrated) {
     return (
