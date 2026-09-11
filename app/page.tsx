@@ -154,7 +154,7 @@ export default function Home() {
         已选科目，点击开始练习；进度按科目自动保存在本地。
       </p>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2">
         {chosen.map((s) => {
           const total = countOf(bank, s.id)
           const prog = readProgress(s.id, total)
@@ -171,16 +171,17 @@ export default function Home() {
           return (
             <div
               key={s.id}
-              className="flex items-center gap-4 rounded-xl border border-line bg-surface p-4"
+              className="flex items-center gap-4 rounded-xl border border-line bg-surface p-4 transition-colors hover:border-line-strong"
             >
-              <div className="min-w-0 flex-1">
+              <div className="flex min-h-[72px] min-w-0 flex-1 flex-col justify-center">
                 <Link
                   href={`/practice?subject=${s.id}`}
-                  className="block font-medium text-ink transition-colors hover:text-accent"
+                  className="line-clamp-2 font-medium text-ink transition-colors hover:text-accent"
+                  title={s.name}
                 >
                   {s.name}
                 </Link>
-                <div className="mt-1 text-xs text-faint">
+                <div className="mt-1 truncate text-xs text-faint">
                   {empty
                     ? '待导入'
                     : `共 ${total} 题${
@@ -188,23 +189,23 @@ export default function Home() {
                       }`}
                 </div>
                 {!empty && (
-                  <div className="mt-2 flex items-center gap-3 text-xs">
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 pr-1 text-xs">
                     <Link
                       href={`/wrong?subject=${s.id}`}
-                      className="text-danger transition-colors hover:underline"
+                      className="shrink-0 text-danger transition-colors hover:underline"
                     >
                       错题 {wrongCount}
                     </Link>
                     <Link
                       href={`/practice?subject=${s.id}&mode=flags`}
-                      className="text-warn transition-colors hover:underline"
+                      className="shrink-0 text-warn transition-colors hover:underline"
                     >
                       难题 {flagCount}
                     </Link>
                     {dueCount > 0 && (
                       <Link
                         href={`/practice?subject=${s.id}&mode=review`}
-                        className="text-accent transition-colors hover:underline"
+                        className="shrink-0 text-accent transition-colors hover:underline"
                       >
                         复习 {dueCount}
                       </Link>
@@ -212,7 +213,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => resetSubject(s.id)}
-                      className="ml-auto text-faint transition-colors hover:text-danger hover:underline"
+                      className="shrink-0 text-faint transition-colors hover:text-danger hover:underline"
                     >
                       重置
                     </button>
@@ -220,11 +221,23 @@ export default function Home() {
                 )}
               </div>
               {!empty && (
-                <div className="relative shrink-0">
-                  <ProgressRing value={total ? answered / total : 0} />
-                  <span className="absolute inset-0 flex items-center justify-center text-[11px] font-medium text-muted">
-                    {pct}%
-                  </span>
+                <div className="flex shrink-0 flex-col items-center gap-2">
+                  <div className="relative">
+                    <ProgressRing value={total ? answered / total : 0} size={48} />
+                    <span className="absolute inset-0 flex items-center justify-center text-[11px] font-medium leading-none tabular-nums text-muted">
+                      {pct}%
+                    </span>
+                  </div>
+                  <Link
+                    href={`/practice?subject=${s.id}`}
+                    className="whitespace-nowrap rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
+                  >
+                    {answered === 0
+                      ? '开始练习'
+                      : answered >= total
+                        ? '再刷一次'
+                        : '继续练习'}
+                  </Link>
                 </div>
               )}
             </div>
